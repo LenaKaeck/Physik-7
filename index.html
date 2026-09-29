@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Physik Klasse 7</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap">
+<style>
+/* Layout: Comic-Heft-Übersicht – Titel oben, darunter die Stoffeinheiten der Klasse 7 als Karten in Rahmenplan-Reihenfolge. */
+:root{
+  --paper:#fff4cf;
+  --paper-dot:#f3dc93;
+  --ink:#1b1b1f;
+  --panel:#ffffff;
+  --red:#e63b2e;
+  --blue:#1f6fd1;
+  --yellow:#ffd23f;
+  --green:#2e9e5b;
+  --muted:#5b5646;
+  --font-display:"Bangers","Impact","Arial Black",sans-serif;
+  --font-body:"Comic Neue","Comic Sans MS","Chalkboard SE","Trebuchet MS",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{background:var(--paper)}
+body{
+  margin:0;color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.45;
+  background-color:var(--paper);
+  background-image:radial-gradient(var(--paper-dot) 1.6px,transparent 1.8px);
+  background-size:14px 14px;
+  padding-inline:16px;padding-block:24px 48px;
+}
+.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
+
+header{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+h1{font-family:var(--font-display);font-weight:400;letter-spacing:2px;font-size:clamp(44px,8vw,80px);line-height:.95;margin:0;
+  color:var(--yellow);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:5px 5px 0 var(--ink)}
+.sub{font-weight:700;color:var(--muted);margin-top:8px}
+
+.units{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px;align-items:start}
+.unit{background:var(--panel);border:4px solid var(--ink);box-shadow:6px 6px 0 var(--ink);padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.unit .area{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted)}
+.unit h2{font-family:var(--font-display);font-weight:400;font-size:28px;letter-spacing:1px;margin:0;line-height:1.05;text-wrap:balance}
+.unit .hours{font-size:14px;font-weight:700;color:var(--muted)}
+.unit.active{background:#fbe7b5}
+
+.game{display:flex;gap:12px;align-items:center;background:var(--panel);border:3px solid var(--ink);border-radius:12px;padding:10px 12px;
+  color:var(--ink);text-decoration:none;box-shadow:4px 4px 0 var(--ink);transition:transform .12s, box-shadow .12s}
+.game:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+.game:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+.game:focus-visible{outline:3px dashed var(--blue);outline-offset:4px}
+.game{flex-wrap:wrap}
+.game svg{flex:none}
+.game .txt{flex:1 1 170px;min-width:0}
+.game .t{font-family:var(--font-display);font-size:23px;letter-spacing:1px;line-height:1}
+.game .d{font-size:15px;margin-top:3px}
+.game .go{margin-left:auto;flex:none;font-family:var(--font-display);font-size:20px;letter-spacing:1px;background:var(--green);color:#fff;border:3px solid var(--ink);border-radius:8px;padding:3px 12px 0}
+
+.soon{border:3px dashed #b9ad85;border-radius:12px;padding:10px 12px;color:var(--muted);font-weight:700;font-size:15px}
+
+footer{font-size:14px;color:var(--muted);font-weight:700}
+@media (prefers-reduced-motion:reduce){.game{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true">
+      <circle cx="42" cy="42" r="36" fill="#cfe9ff" stroke="#1b1b1f" stroke-width="5"/>
+      <path d="M20 42 H58 M48 32 L58 42 L48 52" stroke="#e63b2e" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M64 42 H26 M36 52 L26 42 L36 32" stroke="#1f6fd1" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 16)"/>
+    </svg>
+    <div>
+      <h1>Physik Klasse 7</h1>
+      <div class="sub">Lernspiele zu den Stoffeinheiten des Schuljahres</div>
+    </div>
+  </header>
+
+  <main class="units">
+    <section class="unit">
+      <div class="area">Materie</div>
+      <h2>Dichte</h2>
+      <div class="hours">ca. 8 Unterrichtsstunden</div>
+      <div class="soon">Spiele folgen</div>
+    </section>
+
+    <section class="unit active">
+      <div class="area">Wechselwirkung</div>
+      <h2>Kräfte</h2>
+      <div class="hours">ca. 18 Unterrichtsstunden</div>
+      <a class="game" href="wechselwirkungs-detektiv.html">
+        <svg width="54" height="54" viewBox="0 0 64 64" aria-hidden="true">
+          <circle cx="26" cy="26" r="18" fill="#cfe9ff" stroke="#1b1b1f" stroke-width="5"/>
+          <path d="M18 26 L34 26 M28 20 L34 26 L28 32" stroke="#e63b2e" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M39 39 L58 58" stroke="#1b1b1f" stroke-width="9" stroke-linecap="round"/>
+          <path d="M39 39 L58 58" stroke="#b7793f" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+        <span class="txt">
+          <span class="t">Wechselwirkungs-Detektiv</span>
+          <span class="d" style="display:block">Finde zu jeder Kraft ihre Gegenkraft. 4 Fälle</span>
+        </span>
+        <span class="go">Spielen</span>
+      </a>
+    </section>
+
+    <section class="unit">
+      <div class="area">Kontext</div>
+      <h2>Physik auf der Baustelle</h2>
+      <div class="hours">ca. 6 Unterrichtsstunden</div>
+      <div class="soon">Spiele folgen</div>
+    </section>
+
+    <section class="unit">
+      <div class="area">Energie</div>
+      <h2>Arbeit, Leistung, Wirkungsgrad</h2>
+      <div class="hours">ca. 20 Unterrichtsstunden</div>
+      <div class="soon">Spiele folgen</div>
+    </section>
+
+    <section class="unit">
+      <div class="area">Wechselwirkung</div>
+      <h2>Kraftumformende Einrichtungen</h2>
+      <div class="hours">ca. 8 Unterrichtsstunden</div>
+      <div class="soon">Spiele folgen</div>
+    </section>
+  </main>
+
+  <footer>Stoffeinheiten nach dem Rahmenplan Physik Mecklenburg-Vorpommern, Gymnasium und Gesamtschule, Klasse 7.</footer>
+</div>
+</body>
+</html>
