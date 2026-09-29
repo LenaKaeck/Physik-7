@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wechselwirkungs-Detektiv</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap">
+<style>
+/* Layout: Comic-Heft — links das große Tatort-Panel, rechts die Fallakte mit Sprechblase der Kommissarin. Bewusst ein einziger Look (Comic-Papier), kein Dark-Mode. */
+:root{
+  --paper:#fff4cf;
+  --paper-dot:#f3dc93;
+  --ink:#1b1b1f;
+  --panel:#ffffff;
+  --red:#e63b2e;      /* gegebene Kraft */
+  --blue:#1f6fd1;     /* eigene Kraft */
+  --yellow:#ffd23f;
+  --green:#2e9e5b;
+  --muted:#5b5646;
+  --font-display:"Bangers","Impact","Arial Black",sans-serif;
+  --font-body:"Comic Neue","Comic Sans MS","Chalkboard SE","Trebuchet MS",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--paper)}
+body{
+  color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.45;
+  background-color:var(--paper);
+  background-image:radial-gradient(var(--paper-dot) 1.6px, transparent 1.8px);
+  background-size:14px 14px;
+  padding-inline:16px;padding-block:18px 40px;
+}
+.wrap{max-width:1220px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+
+/* Header */
+header{display:flex;flex-wrap:wrap;align-items:center;gap:14px 22px;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:14px;min-width:0}
+.logo svg{flex:none}
+h1{font-family:var(--font-display);font-weight:400;letter-spacing:1.5px;font-size:clamp(30px,5vw,48px);line-height:.95;margin:0;
+  color:var(--yellow);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:4px 4px 0 var(--ink);text-wrap:balance}
+.sub{font-weight:700;font-size:15px;margin-top:6px;color:var(--muted)}
+
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tab{font-family:var(--font-display);font-size:20px;letter-spacing:1px;background:var(--panel);color:var(--ink);
+  border:3px solid var(--ink);border-radius:10px 10px 4px 4px;padding:6px 14px 4px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);
+  position:relative;transition:transform .12s}
+.tab:hover{transform:translateY(-2px)}
+.tab[aria-current="true"]{background:var(--yellow)}
+.tab .st{display:inline-block;margin-left:6px;font-family:var(--font-body);font-weight:700;font-size:14px;color:var(--green)}
+.tab:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.tab:focus-visible,.btn:focus-visible,select:focus-visible,input:focus-visible{outline:3px dashed var(--blue);outline-offset:3px}
+
+/* Main grid */
+.stage{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:920px){.stage{grid-template-columns:1fr}}
+
+.panel{background:var(--panel);border:5px solid var(--ink);box-shadow:7px 7px 0 var(--ink);position:relative;min-width:0}
+.caption{position:absolute;left:-5px;top:-5px;background:var(--yellow);border:4px solid var(--ink);padding:4px 12px;
+  font-family:var(--font-display);font-size:clamp(17px,2.4vw,24px);letter-spacing:1px;z-index:2;max-width:80%}
+#scene{display:block;width:100%;height:auto;touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none}
+.hintbar{border-top:4px solid var(--ink);padding:8px 14px;font-weight:700;font-size:15px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.legend{display:inline-flex;align-items:center;gap:6px}
+.sw{width:26px;height:8px;border:2px solid var(--ink);border-radius:4px;display:inline-block}
+
+/* Side: Akte */
+.side{display:flex;flex-direction:column;gap:16px;min-width:0}
+.akte{background:#fbe7b5;border:4px solid var(--ink);border-radius:4px 18px 4px 4px;padding:14px 16px;box-shadow:5px 5px 0 var(--ink);position:relative}
+.akte h2{font-family:var(--font-display);font-weight:400;font-size:26px;letter-spacing:1px;margin:0 0 4px;text-wrap:balance}
+.akte .lvl{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted)}
+.akte p{margin:8px 0}
+.zeuge{background:var(--panel);border:3px solid var(--ink);border-radius:18px;padding:8px 12px;position:relative;margin:12px 0 6px;font-style:italic}
+.zeuge::after{content:"";position:absolute;left:24px;bottom:-14px;border:8px solid transparent;border-top:12px solid var(--ink)}
+.zeuge b{font-style:normal}
+.auftrag{background:var(--ink);color:var(--paper);padding:8px 12px;border-radius:6px;font-weight:700;margin-top:14px}
+.auftrag .f{color:var(--yellow)}
+
+.btns{display:flex;flex-wrap:wrap;gap:10px}
+.btn{font-family:var(--font-display);font-size:22px;letter-spacing:1px;border:3px solid var(--ink);background:var(--panel);color:var(--ink);
+  padding:6px 16px 3px;border-radius:8px;box-shadow:4px 4px 0 var(--ink);cursor:pointer;transition:transform .1s, box-shadow .1s}
+.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
+.btn.primary{background:var(--blue);color:#fff}
+.btn.go{background:var(--green);color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:4px 4px 0 var(--ink);transform:none}
+
+.checks{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-weight:700;font-size:15px}
+.checks li{display:flex;align-items:center;gap:8px;background:var(--panel);border:3px solid var(--ink);border-radius:8px;padding:4px 8px}
+.checks .m{width:24px;height:24px;border-radius:50%;border:3px solid var(--ink);display:grid;place-items:center;font-size:14px;flex:none;background:#eee}
+.checks .ok .m{background:var(--green);color:#fff}
+.checks .no .m{background:var(--red);color:#fff}
+
+.kommissarin{display:flex;gap:10px;align-items:flex-start}
+.kommissarin svg{flex:none}
+.bubble{background:var(--panel);border:4px solid var(--ink);border-radius:22px;padding:10px 14px;position:relative;min-width:0;flex:1;box-shadow:4px 4px 0 var(--ink)}
+.bubble::before{content:"";position:absolute;left:-20px;top:22px;border:10px solid transparent;border-right:16px solid var(--ink)}
+.bubble .who{font-family:var(--font-display);letter-spacing:1px;font-size:17px;color:var(--blue)}
+.bubble p{margin:4px 0}
+.bubble.win{background:#e6f7ea}
+.bubble.bad{background:#fff0ee}
+
+/* Zeugen-Tipp & Verhör */
+.tipp{margin:16px 0 4px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;font-weight:700}
+.btn.sm{font-size:19px;padding:4px 16px 1px;box-shadow:3px 3px 0 var(--ink)}
+.btn.sm.ja{background:#bfe8c9}.btn.sm.nein{background:#ffc9c2}
+.chip{display:inline-block;border:3px solid var(--ink);border-radius:999px;padding:1px 12px;background:var(--panel);font-weight:700}
+.chip.ok{background:#bfe8c9}.chip.no{background:#ffc9c2}
+.verhoer{background:var(--panel);border:4px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:12px 16px;position:relative}
+.verhoer h3{font-family:var(--font-display);font-weight:400;font-size:24px;letter-spacing:1px;margin:0 0 6px;color:var(--red)}
+.verhoer p{margin:6px 0}
+.opts{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.opt{display:flex;gap:10px;align-items:flex-start;border:3px solid var(--ink);border-radius:10px;padding:8px 10px;cursor:pointer;background:#fffdf3;font-size:16px}
+.opt input{margin-top:4px;accent-color:var(--blue);width:18px;height:18px;flex:none}
+.opt.sel{background:#e3eeff}.opt.wrong{background:#ffe1dc}.opt.right{background:#d6f3dd}
+.opt.dis{cursor:default}
+.vstamp{display:inline-block;transform:rotate(-6deg);border:4px solid var(--green);color:var(--green);font-family:var(--font-display);font-size:24px;letter-spacing:1px;padding:0 10px;border-radius:8px;margin-top:4px}
+
+/* Startseite */
+.startgrid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:880px){.startgrid{grid-template-columns:1fr}}
+.startgrid details.lk{grid-column:1/-1}
+.cover{background:#cfe9ff;background-image:radial-gradient(rgba(27,27,31,.09) 1.6px,transparent 1.8px);background-size:12px 12px;border:5px solid var(--ink);box-shadow:7px 7px 0 var(--ink);padding:18px 20px 22px;position:relative}
+.howto{background:#fbe7b5;border:4px solid var(--ink);border-radius:4px 18px 4px 4px;box-shadow:5px 5px 0 var(--ink);padding:14px 18px}
+.howto h2{font-family:var(--font-display);font-weight:400;font-size:28px;letter-spacing:1px;margin:0 0 6px}
+.steps{margin:0;padding-left:0;list-style:none;counter-reset:st;display:flex;flex-direction:column;gap:10px}
+.steps li{counter-increment:st;display:flex;gap:10px;align-items:flex-start}
+.steps li::before{content:counter(st);flex:none;width:34px;height:34px;border-radius:50%;border:3px solid var(--ink);background:var(--yellow);font-family:var(--font-display);font-size:22px;display:grid;place-items:center}
+.legendline{display:flex;gap:14px;flex-wrap:wrap;font-weight:700;font-size:15px}
+.btn.big{font-size:30px;padding:8px 26px 4px}
+
+/* Abschluss */
+.final{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:860px){.final{grid-template-columns:1fr}}
+.notiz{background:var(--panel);border:5px solid var(--ink);box-shadow:7px 7px 0 var(--ink);padding:18px 20px;
+  background-image:repeating-linear-gradient(transparent 0 33px,#bcd3f0 33px 35px);}
+.notiz h2,.ausweis h2{font-family:var(--font-display);font-weight:400;font-size:30px;letter-spacing:1px;margin:0 0 8px}
+.luecke{font-size:19px;line-height:2.05}
+select{font-family:var(--font-body);font-weight:700;font-size:17px;border:3px solid var(--ink);border-radius:6px;padding:2px 6px;background:var(--yellow);color:var(--ink)}
+select.ok{background:#bfe8c9}select.no{background:#ffc9c2}
+.ausweis{background:linear-gradient(135deg,#fff 0%,#fff 60%,#ffe79a 100%);border:5px solid var(--ink);border-radius:16px;box-shadow:7px 7px 0 var(--ink);padding:18px 20px;position:relative;overflow:hidden}
+.ausweis .row{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.ausweis label{font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);display:block}
+.ausweis input{font-family:var(--font-body);font-weight:700;font-size:20px;border:0;border-bottom:3px solid var(--ink);background:transparent;padding:2px 0;width:100%;max-width:260px;color:var(--ink)}
+.rang{font-family:var(--font-display);font-size:34px;letter-spacing:1px;color:var(--red);line-height:1}
+.stamp{position:absolute;right:14px;bottom:14px;transform:rotate(-14deg);border:4px solid var(--green);color:var(--green);font-family:var(--font-display);font-size:24px;padding:2px 10px;border-radius:8px;letter-spacing:1px;opacity:.85}
+.locked{filter:grayscale(1) blur(1.5px);opacity:.5;pointer-events:none}
+.stats{font-size:15px}
+
+details.lk{background:var(--panel);border:3px solid var(--ink);border-radius:8px;padding:8px 14px;font-size:15px}
+details.lk summary{font-weight:700;cursor:pointer}
+details.lk ul{margin:6px 0;padding-left:20px}
+
+/* Win-Burst */
+@keyframes pop{0%{transform:scale(.2) rotate(-20deg);opacity:0}60%{transform:scale(1.12) rotate(4deg);opacity:1}100%{transform:scale(1) rotate(-6deg);opacity:1}}
+.burst{transform-box:fill-box;transform-origin:center;animation:pop .45s ease-out both}
+@media (prefers-reduced-motion:reduce){.burst{animation:none}.tab,.btn{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="logo">
+      <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="26" cy="26" r="18" fill="#cfe9ff" stroke="#1b1b1f" stroke-width="5"/>
+        <path d="M18 26 L34 26 M28 20 L34 26 L28 32" stroke="#e63b2e" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M39 39 L58 58" stroke="#1b1b1f" stroke-width="9" stroke-linecap="round"/>
+        <path d="M39 39 L58 58" stroke="#b7793f" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <h1>Wechselwirkungs-Detektiv</h1>
+        <div class="sub">Physik Klasse 7 · Finde zu jeder Kraft ihre Gegenkraft!</div>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="Fälle"></nav>
+  </header>
+
+  <section id="start" class="startgrid">
+    <div class="cover">
+      <div class="caption">Neuer Auftrag!</div>
+      <div class="kommissarin" style="margin-top:34px">
+        <svg width="110" height="130" viewBox="0 0 78 92" aria-hidden="true">
+          <path d="M8 92 Q10 64 39 62 Q68 64 70 92Z" fill="#b7793f" stroke="#1b1b1f" stroke-width="3.5"/>
+          <path d="M30 64 L39 80 L48 64" fill="#fff" stroke="#1b1b1f" stroke-width="3"/>
+          <circle cx="39" cy="40" r="20" fill="#e8b48a" stroke="#1b1b1f" stroke-width="3.5"/>
+          <path d="M19 38 Q18 16 39 14 Q60 16 59 38 Q52 30 39 30 Q26 30 19 38Z" fill="#2c2a4a" stroke="#1b1b1f" stroke-width="3"/>
+          <path d="M14 24 Q39 2 64 24 Q60 28 39 26 Q18 28 14 24Z" fill="#6b5b3e" stroke="#1b1b1f" stroke-width="3.5"/>
+          <circle cx="32" cy="42" r="2.8" fill="#1b1b1f"/><circle cx="47" cy="42" r="2.8" fill="#1b1b1f"/>
+          <path d="M33 51 Q39 55 45 51" fill="none" stroke="#1b1b1f" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="62" cy="62" r="10" fill="#cfe9ff" stroke="#1b1b1f" stroke-width="3.5"/>
+          <path d="M55 70 L48 80" stroke="#1b1b1f" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+        <div class="bubble">
+          <div class="who">Kommissarin Kraft</div>
+          <p>In der Stadt wirken überall Kräfte. Mein Verdacht: <b>Keine Kraft ist allein unterwegs.</b> Zu jeder Kraft gibt es eine Gegenkraft.</p>
+          <p>In vier Fällen hat die Spurensicherung jeweils eine Kraft gefunden. Finde ihre Gegenkraft und überführe die Zeugen, die Unsinn erzählen!</p>
+        </div>
+      </div>
+      <div class="btns" style="margin-top:18px"><button class="btn go big" id="startbtn">Ermittlung starten</button></div>
+    </div>
+    <div class="howto">
+      <h2>So ermittelst du</h2>
+      <ol class="steps">
+        <li><span><b>Tipp abgeben:</b> Lies die Zeugenaussage. Hat der Zeuge recht? Ja oder Nein, Bauchgefühl ist erlaubt.</span></li>
+        <li><span><b>Gegenkraft zeichnen:</b> Drück auf den Körper, an dem die Gegenkraft angreift, und zieh den Pfeil in Richtung und Länge. Dann <b>Prüfen</b>.</span></li>
+        <li><span><b>Verhör:</b> Wähle die Begründung, die zu deinen Pfeilen passt. Dann ist der Fall gelöst.</span></li>
+      </ol>
+      <p class="legendline"><span class="legend"><span class="sw" style="background:var(--red)"></span>gefundene Kraft</span> <span class="legend"><span class="sw" style="background:var(--blue)"></span>deine Gegenkraft</span></p>
+      <p style="margin-bottom:0">Nach allen vier Fällen wartet dein <b>Detektivausweis</b>.</p>
+    </div>
+    <details class="lk">
+      <summary>Für Lehrkräfte: Rahmenplan-Bezug &amp; Hinweise</summary>
+    <ul>
+      <li><b>Rahmenplan Physik Kl. 7, „Wechselwirkung – Kräfte“:</b> Kraft als Wechselwirkungsgröße, Betrag/Richtung/Angriffspunkt, Darstellung durch Pfeile, Wechselwirkungsaspekt der Gewichtskraft (Fall 4), Ausblick auf magnetische Kräfte (Fall 2).</li>
+      <li><b>Einsatz:</b> nach dem SE „Experimentelle Überprüfung des Wechselwirkungsprinzips“ (zwei Kraftmesser, zwei Rollbretter). Ca. 15–20 min in Partnerarbeit oder gemeinsam am Beamer.</li>
+      <li><b>Schreibweise:</b> F<sub>A→B</sub> heißt „Kraft von A auf B“. Die Gegenkraft ist F<sub>B→A</sub>.</li>
+      <li><b>Zeugenaussagen:</b> Vor dem Zeichnen tippen die SuS, ob der Zeuge recht hat (Vorhersage). Nach dem richtigen Pfeil wählen sie eine von drei Begründungen; die falschen Begründungen sind typische Fehlvorstellungen und bekommen eigene Rückmeldungen. Fall 2 ist bewusst eine <i>richtige</i> Aussage, damit „immer Nein“ nicht funktioniert.</li>
+      <li><b>Toleranzen:</b> Richtung ±25°, Betrag ±18 %, Angriffspunkt bei Berührungskräften ca. 1 cm um die Kontaktstelle.</li>
+      <li><b>Prototyp:</b> 4 Fälle, kein Login, nichts wird gespeichert.</li>
+    </ul>
+  </details>
+  </section>
+
+  <section id="play" class="stage" hidden>
+    <div class="panel">
+      <div class="caption" id="caption">Fall 1</div>
+      <svg id="scene" viewBox="0 0 800 450" role="img" aria-label="Tatort-Szene"></svg>
+      <div class="hintbar">
+        <span class="legend"><span class="sw" style="background:var(--red)"></span>gefundene Kraft</span>
+        <span class="legend"><span class="sw" style="background:var(--blue)"></span>deine Gegenkraft</span>
+        <span style="color:var(--muted)">Drücke auf den Angriffspunkt und ziehe den Pfeil.</span>
+      </div>
+    </div>
+
+    <div class="side">
+      <article class="akte">
+        <div class="lvl" id="lvl"></div>
+        <h2 id="ctitle"></h2>
+        <p id="story"></p>
+        <div class="zeuge" id="zeuge"></div>
+        <div class="tipp" id="tipp"></div>
+        <div class="auftrag" id="auftrag"></div>
+      </article>
+
+
+      <div class="btns">
+        <button class="btn primary" id="check" disabled>Prüfen</button>
+        <button class="btn" id="reset">Neu zeichnen</button>
+        <button class="btn" id="solve" hidden>Lösung zeigen</button>
+      </div>
+
+      <ul class="checks" id="checks"></ul>
+
+      <div class="kommissarin">
+        <svg width="78" height="92" viewBox="0 0 78 92" aria-hidden="true">
+          <path d="M8 92 Q10 64 39 62 Q68 64 70 92Z" fill="#b7793f" stroke="#1b1b1f" stroke-width="3.5"/>
+          <path d="M30 64 L39 80 L48 64" fill="#fff" stroke="#1b1b1f" stroke-width="3"/>
+          <circle cx="39" cy="40" r="20" fill="#e8b48a" stroke="#1b1b1f" stroke-width="3.5"/>
+          <path d="M19 38 Q18 16 39 14 Q60 16 59 38 Q52 30 39 30 Q26 30 19 38Z" fill="#2c2a4a" stroke="#1b1b1f" stroke-width="3"/>
+          <path d="M14 24 Q39 2 64 24 Q60 28 39 26 Q18 28 14 24Z" fill="#6b5b3e" stroke="#1b1b1f" stroke-width="3.5"/>
+          <path d="M22 16 Q39 6 56 16" fill="none" stroke="#1b1b1f" stroke-width="2.5"/>
+          <circle cx="32" cy="42" r="2.8" fill="#1b1b1f"/><circle cx="47" cy="42" r="2.8" fill="#1b1b1f"/>
+          <path d="M33 51 Q39 55 45 51" fill="none" stroke="#1b1b1f" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="62" cy="62" r="10" fill="#cfe9ff" stroke="#1b1b1f" stroke-width="3.5"/>
+          <path d="M55 70 L48 80" stroke="#1b1b1f" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+        <div class="bubble" id="bubble" aria-live="polite"></div>
+      </div>
+      <section class="verhoer" id="verhoer" hidden aria-live="polite"></section>
+      <div class="kommissarin" id="kom2" hidden>
+        <svg width="78" height="92" viewBox="0 0 78 92" aria-hidden="true">
+          <path d="M8 92 Q10 64 39 62 Q68 64 70 92Z" fill="#b7793f" stroke="#1b1b1f" stroke-width="3.5"/>
+          <path d="M30 64 L39 80 L48 64" fill="#fff" stroke="#1b1b1f" stroke-width="3"/>
+          <circle cx="39" cy="40" r="20" fill="#e8b48a" stroke="#1b1b1f" stroke-width="3.5"/>
+          <path d="M19 38 Q18 16 39 14 Q60 16 59 38 Q52 30 39 30 Q26 30 19 38Z" fill="#2c2a4a" stroke="#1b1b1f" stroke-width="3"/>
+          <path d="M14 24 Q39 2 64 24 Q60 28 39 26 Q18 28 14 24Z" fill="#6b5b3e" stroke="#1b1b1f" stroke-width="3.5"/>
+          <path d="M22 16 Q39 6 56 16" fill="none" stroke="#1b1b1f" stroke-width="2.5"/>
+          <circle cx="32" cy="42" r="2.8" fill="#1b1b1f"/><circle cx="47" cy="42" r="2.8" fill="#1b1b1f"/>
+          <path d="M33 51 Q39 55 45 51" fill="none" stroke="#1b1b1f" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="62" cy="62" r="10" fill="#cfe9ff" stroke="#1b1b1f" stroke-width="3.5"/>
+          <path d="M55 70 L48 80" stroke="#1b1b1f" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+        <div class="bubble win" id="bubble2" aria-live="polite"></div>
+      </div>
+      <div class="btns"><button class="btn go" id="next" hidden>Nächster Fall</button></div>
+    </div>
+  </section>
+
+  <section id="finale" class="final" hidden>
+    <div class="notiz">
+      <h2>Detektiv-Notizbuch</h2>
+      <p style="margin-top:0">Alle Fälle gelöst! Schreib jetzt die Regel auf, die hinter allen Fällen steckt.</p>
+      <div class="luecke" id="luecke"></div>
+      <div class="btns" style="margin-top:12px"><button class="btn primary" id="rulecheck">Regel prüfen</button></div>
+      <p id="rulemsg" style="font-weight:700"></p>
+    </div>
+    <div class="ausweis locked" id="ausweis">
+      <h2>Detektivausweis</h2>
+      <div class="row">
+        <svg width="90" height="100" viewBox="0 0 78 92" aria-hidden="true" style="border:3px solid #1b1b1f;border-radius:8px;background:#cfe9ff">
+          <path d="M8 92 Q10 64 39 62 Q68 64 70 92Z" fill="#1f6fd1" stroke="#1b1b1f" stroke-width="3.5"/>
+          <circle cx="39" cy="40" r="20" fill="#f6c9a0" stroke="#1b1b1f" stroke-width="3.5"/>
+          <circle cx="32" cy="42" r="2.8" fill="#1b1b1f"/><circle cx="47" cy="42" r="2.8" fill="#1b1b1f"/>
+          <path d="M31 50 Q39 57 47 50" fill="none" stroke="#1b1b1f" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M14 26 Q39 4 64 26 Q60 30 39 28 Q18 30 14 26Z" fill="#6b5b3e" stroke="#1b1b1f" stroke-width="3.5"/>
+        </svg>
+        <div style="flex:1;min-width:180px;display:flex;flex-direction:column;gap:10px">
+          <div><label for="dname">Name</label><input id="dname" placeholder="Dein Name" autocomplete="off"></div>
+          <div><label>Rang</label><div class="rang" id="rang">–</div></div>
+        </div>
+      </div>
+      <p class="stats" id="stats"></p>
+      <div class="stamp">Kraftpaare-Abteilung</div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+const INK="#1b1b1f", RED="#e63b2e", BLUE="#1f6fd1", GREEN="#2e9e5b";
+const DEFS=`<defs>
+ <pattern id="dots" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="6" cy="6" r="1.6" fill="#1b1b1f" opacity=".09"/></pattern>
+ <pattern id="bricks" width="44" height="24" patternUnits="userSpaceOnUse">
+   <rect width="44" height="24" fill="#c8553d"/>
+   <path d="M0 0H44M0 12H44M11 0V12M33 12V24" stroke="#7a2e1f" stroke-width="2.5"/>
+ </pattern>
+ <clipPath id="earthclip"><circle cx="400" cy="1760" r="1400"/></clipPath>
+</defs>`;
+
+function tag(x,y,t,rot){return `<g transform="translate(${x} ${y}) rotate(${rot||0})"><rect x="${-t.length*5.6-8}" y="-14" width="${t.length*11.2+16}" height="26" rx="5" fill="#fff" stroke="${INK}" stroke-width="3"/><text x="0" y="6" text-anchor="middle" font-family="Comic Neue, sans-serif" font-weight="700" font-size="16" fill="${INK}">${t}</text></g>`}
+function limb(d,color,w){return `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${w+8}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${color}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`}
+function starburst(cx,cy,r1,r2,n,fill){let p=[];for(let i=0;i<n*2;i++){const a=Math.PI*i/n - Math.PI/2;const r=i%2?r2:r1;p.push((cx+Math.cos(a)*r).toFixed(1)+","+(cy+Math.sin(a)*r).toFixed(1))}return `<polygon points="${p.join(" ")}" fill="${fill}" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>`}
+function comicText(x,y,t,size,fill,rot){return `<text x="${x}" y="${y}" transform="rotate(${rot||0} ${x} ${y})" text-anchor="middle" font-family="Bangers, Impact, sans-serif" font-size="${size}" fill="${fill}" stroke="${INK}" stroke-width="3" paint-order="stroke" letter-spacing="1">${t}</text>`}
+
+const CASES=[
+{
+ id:1, level:"Level 2 · Berührungsfall", title:"Der Wand-Abstoß",
+ story:"Skaterin Mia stößt sich mit dem Fuß von der Wand ab und rollt davon. Die Spurensicherung hat bereits <b>eine</b> Kraft gefunden:",
+ witness:"<b>Hausmeister Kowalski:</b> „Die Wand macht doch nix. Die steht nur rum!“",
+ given:{x1:604,y1:300,x2:724,y2:300,sub:"Fuß→Wand",lx:792,ly:346,anchor:"end"},
+ value:200, step:10,
+ target:{body:"skater", dir:[-1,0], point:[596,300], contact:true, sub:"Wand→Fuß"},
+ bodies:[
+  {id:"skater",rects:[[380,100,150,280],[430,262,172,60]]},
+  {id:"wall",rects:[[600,28,100,360]]},
+  {id:"floor",rects:[[0,385,800,65]]}
+ ],
+ msgs:{
+  wall:"Dein Pfeil sitzt an der Wand. Dort greift aber schon <b>F<sub>Fuß→Wand</sub></b> an. Die Gegenkraft wirkt immer auf den <b>anderen</b> Körper. Wer ist hier der andere?",
+  floor:"Der Boden ist nur Nebenzeuge. Unser Kraftpaar besteht aus Fuß und Wand. Wenn der Fuß auf die Wand wirkt, wirkt die Wand auf …?",
+  dir:"Überprüf die Richtung! Mia rollt nach links davon. In welche Richtung drückt die Wand sie also?",
+  short:"Zu schwach! Die Wand drückt <b>genauso stark</b> zurück: 200 N. Denk an euer Experiment mit den zwei Kraftmessern.",
+  long:"Zu stark! Die Wand drückt nicht stärker zurück als der Fuß. Beide Kräfte sind gleich groß.",
+  point:"Fast! Bei Berührungskräften liegt der Angriffspunkt dort, wo sich die Körper berühren: an Mias Schuhsohle.",
+  win:"Die Wand drückt mit 200 N auf Mias Fuß, genauso stark wie der Fuß auf die Wand. Deshalb rollt Mia los. Kowalski irrt: Auch Körper, die „nur rumstehen“, üben Kräfte aus!"
+ },
+ draw:()=>`
+  <rect width="800" height="450" fill="#cfe9ff"/><rect width="800" height="450" fill="url(#dots)"/>
+  <rect x="-5" y="385" width="810" height="70" fill="#a3a8ae" stroke="${INK}" stroke-width="4"/>
+  <rect x="600" y="28" width="100" height="358" fill="url(#bricks)" stroke="${INK}" stroke-width="5"/>
+  <g stroke="${INK}" stroke-width="4" stroke-linecap="round"><line x1="290" y1="175" x2="360" y2="175"/><line x1="270" y1="222" x2="360" y2="222"/><line x1="300" y1="270" x2="365" y2="270"/><line x1="285" y1="318" x2="370" y2="318"/></g>
+  <g stroke="${INK}" stroke-width="4" stroke-linejoin="round">
+   <rect x="390" y="348" width="128" height="12" rx="6" fill="#ffd23f"/>
+   <circle cx="413" cy="370" r="9" fill="#fff"/><circle cx="495" cy="370" r="9" fill="#fff"/>
+  </g>
+  ${limb("M452 255 L444 303 L448 344","#3b4cc0",13)}
+  ${limb("M462 258 L528 282 L582 298","#3b4cc0",13)}
+  <ellipse cx="452" cy="344" rx="17" ry="8" fill="${RED}" stroke="${INK}" stroke-width="4"/>
+  <ellipse cx="588" cy="299" rx="9" ry="16" fill="${RED}" stroke="${INK}" stroke-width="4"/>
+  ${limb("M438 185 L400 210 L382 184","#f6c9a0",9)}
+  ${limb("M472 183 L505 162 L522 136","#f6c9a0",9)}
+  <rect x="428" y="165" width="54" height="98" rx="20" fill="#2bb3a3" stroke="${INK}" stroke-width="4"/>
+  <path d="M430 124 Q398 116 390 142 Q410 136 428 140Z" fill="#6b3a1e" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="455" cy="136" r="29" fill="#f6c9a0" stroke="${INK}" stroke-width="4"/>
+  <path d="M427 130 Q430 100 458 103 Q484 104 486 128 Q470 116 450 119 Q437 122 427 130Z" fill="#6b3a1e" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="467" cy="134" r="3.6" fill="${INK}"/>
+  <path d="M462 148 Q471 155 479 146" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>
+  ${comicText(170,110,"HUIII!",56,"#ffd23f",-8)}
+  ${tag(455,80,"Mia")}${tag(650,60,"Wand")}${tag(120,420,"Boden")}
+ `
+},
+{
+ id:2, level:"Level 3 · Fernwirkung", title:"Der wandernde Nagel",
+ story:"Ein Nagel rutscht auf dem Tisch plötzlich auf einen Magneten zu, <b>ohne dass ihn jemand berührt</b>. Gefundene Kraft:",
+ witness:"<b>Tom:</b> „Ich wette, der Nagel zieht den Magneten genauso stark an wie der Magnet den Nagel.“",
+ given:{x1:615,y1:280,x2:505,y2:280,sub:"Magnet→Nagel",lx:560,ly:245,anchor:"middle"},
+ value:2, step:0.1,
+ target:{body:"magnet", dir:[1,0], point:[330,280], contact:false, sub:"Nagel→Magnet"},
+ bodies:[
+  {id:"magnet",rects:[[175,245,210,70]]},
+  {id:"nail",rects:[[506,254,212,52]]},
+  {id:"table",rects:[[0,330,800,120]]}
+ ],
+ msgs:{
+  nail:"Am Nagel greift schon <b>F<sub>Magnet→Nagel</sub></b> an. Die Gegenkraft wirkt auf den <b>anderen</b> Körper des Paares.",
+  table:"Der Tisch trägt beide nur. Unser Paar besteht aus Magnet und Nagel.",
+  dir:"Überprüf die Richtung! Der Nagel zieht den Magneten <b>zu sich hin</b>. Wo liegt der Nagel?",
+  short:"Zu schwach! Auch der kleine Nagel zieht mit <b>2 N</b>. Die Kräfte sind gleich groß, egal wie groß die Körper sind.",
+  long:"Zu stark! Der Nagel zieht nicht stärker als der Magnet. Gleich groß!",
+  point:"",
+  win:"Der Nagel zieht den Magneten mit 2 N an! Man sieht es nur nicht, weil der schwere Magnet mehr Reibung hat. Probiert es aus: Magnet auf einen Korken im Wasser legen und den Nagel davorhalten. Wechselwirkung funktioniert auch <b>ohne Berührung</b>."
+ },
+ draw:()=>`
+  <rect width="800" height="450" fill="#ffe3a8"/><rect width="800" height="450" fill="url(#dots)"/>
+  <rect x="-5" y="330" width="810" height="125" fill="#c68a4c" stroke="${INK}" stroke-width="4"/>
+  <g stroke="#8a5a2b" stroke-width="3" fill="none" stroke-linecap="round"><path d="M40 370 Q160 360 280 372"/><path d="M420 400 Q560 390 700 404"/><path d="M120 425 Q240 418 330 428"/></g>
+  <rect x="180" y="250" width="100" height="60" fill="${RED}" stroke="${INK}" stroke-width="4"/>
+  <rect x="280" y="250" width="100" height="60" fill="${GREEN}" stroke="${INK}" stroke-width="4"/>
+  ${comicText(230,293,"N",38,"#fff")}${comicText(330,293,"S",38,"#fff")}
+  <rect x="540" y="273" width="160" height="14" fill="#b9c0c8" stroke="${INK}" stroke-width="4"/>
+  <rect x="698" y="260" width="13" height="40" rx="3" fill="#8d949c" stroke="${INK}" stroke-width="4"/>
+  <polygon points="540,273 512,280 540,287" fill="#b9c0c8" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
+  <g stroke="${INK}" stroke-width="4" stroke-linecap="round"><line x1="728" y1="262" x2="775" y2="262"/><line x1="735" y1="280" x2="790" y2="280"/><line x1="728" y1="298" x2="775" y2="298"/></g>
+  ${comicText(600,150,"ZZZIP!",60,"#9be15d",-6)}
+  ${tag(280,225,"Magnet")}${tag(612,320,"Nagel")}${tag(90,395,"Tisch")}
+ `
+},
+{
+ id:3, level:"Level 4 · Schwerer Fall", title:"Crash auf dem Parkplatz",
+ story:"Ein Lkw rollt gegen einen stehenden Pkw. Die Spurensicherung hat gemessen:",
+ witness:"<b>Zeuge Herr Brummer:</b> „Der kleine Pkw hat den Lkw kaum berührt. Der Lkw ist doch viel stärker!“",
+ given:{x1:408,y1:318,x2:558,y2:318,sub:"Lkw→Pkw",lx:420,ly:236,anchor:"start"},
+ value:5000, step:100,
+ target:{body:"lkw", dir:[-1,0], point:[398,318], contact:true, sub:"Pkw→Lkw"},
+ bodies:[
+  {id:"lkw",rects:[[55,175,349,215]]},
+  {id:"pkw",rects:[[404,240,252,150]]},
+  {id:"road",rects:[[0,380,800,70]]}
+ ],
+ msgs:{
+  pkw:"Am Pkw greift schon <b>F<sub>Lkw→Pkw</sub></b> an. Die Gegenkraft wirkt auf den <b>anderen</b> Körper.",
+  road:"Die Straße ist hier nicht beteiligt. Das Kraftpaar besteht aus Lkw und Pkw.",
+  dir:"Überprüf die Richtung! Der Pkw drückt gegen die Front des Lkw, also in welche Richtung?",
+  short:"Herr Brummer irrt! Die Kräfte sind <b>gleich groß</b>, also auch 5000 N. Der Pkw hat nur die kleinere Masse, deshalb ist die <b>Wirkung</b> auf ihn größer.",
+  long:"Zu stark! Der Pkw drückt nicht stärker als der Lkw. Beide Kräfte sind gleich groß.",
+  point:"Fast! Die Kraft greift dort an, wo sich die Fahrzeuge berühren: an der Front des Lkw.",
+  win:"Der Pkw drückt mit 5000 N auf den Lkw, genauso stark wie umgekehrt. <b>Gleiche Kraft, unterschiedliche Wirkung:</b> Der leichte Pkw wird viel stärker beschleunigt und verformt als der schwere Lkw."
+ },
+ draw:()=>`
+  <rect width="800" height="450" fill="#cfe9ff"/><rect width="800" height="450" fill="url(#dots)"/>
+  <rect x="-5" y="380" width="810" height="75" fill="#5d6166" stroke="${INK}" stroke-width="4"/>
+  <g stroke="#fff" stroke-width="6"><line x1="20" y1="420" x2="90" y2="420"/><line x1="170" y1="420" x2="240" y2="420"/><line x1="320" y1="420" x2="390" y2="420"/><line x1="470" y1="420" x2="540" y2="420"/><line x1="620" y1="420" x2="690" y2="420"/></g>
+  <rect x="60" y="180" width="238" height="170" rx="4" fill="#f28c28" stroke="${INK}" stroke-width="4"/>
+  <text x="179" y="262" text-anchor="middle" font-family="Bangers, Impact, sans-serif" font-size="30" fill="#fff" stroke="${INK}" stroke-width="2.5" paint-order="stroke">SPEDITION</text>
+  <text x="179" y="294" text-anchor="middle" font-family="Bangers, Impact, sans-serif" font-size="30" fill="#fff" stroke="${INK}" stroke-width="2.5" paint-order="stroke">SCHNELLTRANS</text>
+  <path d="M298 350 L298 238 L368 238 Q392 242 398 272 L402 350 Z" fill="#3b6fd1" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M318 252 L364 252 Q380 256 384 286 L318 286Z" fill="#e6f4ff" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/>
+  <g stroke="${INK}" stroke-width="4"><circle cx="118" cy="364" r="23" fill="#333"/><circle cx="248" cy="364" r="23" fill="#333"/><circle cx="350" cy="364" r="23" fill="#333"/></g>
+  <g fill="#bbb" stroke="${INK}" stroke-width="3"><circle cx="118" cy="364" r="8"/><circle cx="248" cy="364" r="8"/><circle cx="350" cy="364" r="8"/></g>
+  <path d="M404 355 L404 300 Q412 290 432 288 L456 252 Q461 246 472 246 L584 246 Q595 246 600 254 L622 288 Q648 292 652 312 L652 355 Z" fill="#8bc34a" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M470 258 L524 258 L524 288 L452 288Z" fill="#e6f4ff" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/>
+  <path d="M534 258 L586 258 L606 288 L534 288Z" fill="#e6f4ff" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/>
+  <g stroke="${INK}" stroke-width="4"><circle cx="458" cy="364" r="21" fill="#333"/><circle cx="600" cy="364" r="21" fill="#333"/></g>
+  <g fill="#bbb" stroke="${INK}" stroke-width="3"><circle cx="458" cy="364" r="7"/><circle cx="600" cy="364" r="7"/></g>
+  <g stroke="${INK}" stroke-width="4" stroke-linecap="round"><line x1="386" y1="220" x2="378" y2="198"/><line x1="404" y1="214" x2="406" y2="190"/><line x1="420" y1="222" x2="432" y2="202"/></g>
+  ${starburst(600,110,70,44,11,"#ffd23f")}${comicText(600,126,"RUMMS!",46,RED,-8)}
+  ${tag(170,160,"Lkw")}${tag(705,322,"Pkw")}${tag(730,400,"Straße")}
+ `
+},
+{
+ id:4, level:"Level 5 · Gewichtskraft", title:"Newtons Apfel",
+ story:"Ein Apfel (100 g) fällt vom Baum. Die Erde zieht ihn nach unten: 100 g ≙ 1 N. Gesucht ist die Gegenkraft zu dieser <b>Gewichtskraft</b>.",
+ witness:"<b>Emma:</b> „Der Apfel ist doch viel zu klein. Der zieht die Erde bestimmt nicht an.“",
+ given:{x1:400,y1:185,x2:400,y2:295,sub:"Erde→Apfel",lx:414,ly:268,anchor:"start"},
+ value:1, step:0.1,
+ target:{body:"earth", dir:[0,-1], point:[400,400], contact:false, sub:"Apfel→Erde"},
+ bodies:[
+  {id:"apple",circle:[400,185,38]},
+  {id:"earth",circle:[400,1760,1400]}
+ ],
+ msgs:{
+  apple:"Am Apfel greift schon die Gewichtskraft <b>F<sub>Erde→Apfel</sub></b> an. Die Gegenkraft greift immer am <b>anderen</b> Körper an. Frag dich: <b>Wer</b> zieht den Apfel nach unten?",
+  dir:"Überprüf die Richtung! Der Apfel zieht die Erde <b>zu sich hin</b>, also nach oben.",
+  short:"Zu schwach! Der Apfel zieht die Erde mit genau <b>1 N</b> an, so stark wie die Erde den Apfel.",
+  long:"Zu stark! Der Apfel zieht die Erde mit genau 1 N an, nicht stärker.",
+  point:"",
+  win:"Der Apfel zieht die Erde mit 1 N nach oben! Die Erde bewegt sich trotzdem nicht merklich, weil ihre Masse riesig ist. (Genau genommen greift die Kraft im Erdmittelpunkt an.) Isaac Newton soll über genau so einen fallenden Apfel nachgedacht haben."
+ },
+ draw:()=>`
+  <rect width="800" height="450" fill="#cfe9ff"/><rect width="800" height="450" fill="url(#dots)"/>
+  <circle cx="400" cy="1760" r="1400" fill="#3b8fd9"/>
+  <g clip-path="url(#earthclip)" fill="#5cb85c" stroke="${INK}" stroke-width="3"><ellipse cx="130" cy="430" rx="120" ry="42"/><ellipse cx="560" cy="410" rx="95" ry="32"/><ellipse cx="760" cy="445" rx="70" ry="30"/></g>
+  <circle cx="400" cy="1760" r="1400" fill="none" stroke="${INK}" stroke-width="5"/>
+  <g stroke="${INK}" stroke-width="4" stroke-linecap="round"><line x1="370" y1="70" x2="370" y2="120"/><line x1="400" y1="55" x2="400" y2="115"/><line x1="430" y1="70" x2="430" y2="120"/></g>
+  <path d="M400 150 Q398 136 404 126" fill="none" stroke="#6b3a1e" stroke-width="6" stroke-linecap="round"/>
+  <path d="M404 136 Q424 118 440 130 Q424 146 404 136Z" fill="#5cb85c" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/>
+  <path d="M400 152 Q372 140 362 168 Q354 200 376 218 Q390 228 400 220 Q410 228 424 218 Q446 200 438 168 Q428 140 400 152Z" fill="${RED}" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M378 170 Q374 182 378 194" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+  ${tag(300,185,"Apfel")}${tag(690,420,"ERDE")}
+  ${comicText(600,120,"PLUMPS?",48,"#ffd23f",-6)}
+ `
+}
+];
+
+/* ---------- Zeugen: Tipp vorher, Begründung nachher ---------- */
+const WITNESS=[
+ {who:"Kowalski",truth:false,opts:[
+   ["Kowalski irrt: Die Wand drückt zurück, aber schwächer als Mia, weil sie sich nicht bewegt.",false,"Die Wand drückt zwar zurück, aber <b>nicht schwächer</b>. Schau auf deinen Pfeil: 200 N, genau wie der Fuß."],
+   ["Kowalski irrt: Die Wand drückt mit 200 N auf Mias Fuß. Auch Körper, die sich nicht bewegen, üben Kräfte aus.",true,""],
+   ["Kowalski hat recht: Mia rollt nur los, weil sie ihr Bein streckt.",false,"Ohne eine Kraft <b>auf Mia</b> würde sie nicht losrollen. Welcher Körper übt diese Kraft auf sie aus?"]]},
+ {who:"Tom",truth:true,opts:[
+   ["Tom irrt: Der Nagel ist viel kleiner als der Magnet, deshalb zieht er schwächer.",false,"Größe und Masse ändern nichts daran: Die Kräfte eines Wechselwirkungspaares sind <b>immer gleich groß</b>. Schau auf deinen Pfeil!"],
+   ["Tom irrt: Nur Magnete können ziehen. Der Nagel ist bloß ein Stück Eisen.",false,"Wenn der Magnet am Nagel zieht, zieht der Nagel <b>immer auch</b> am Magneten. Das hast du gerade selbst eingezeichnet."],
+   ["Tom hat recht: Der Nagel zieht den Magneten ebenfalls mit 2 N an. Die Kräfte eines Wechselwirkungspaares sind immer gleich groß.",true,""]]},
+ {who:"Herr Brummer",truth:false,opts:[
+   ["Herr Brummer irrt: Beide Kräfte sind 5000 N groß. Der Pkw wird nur stärker beschädigt, weil er die kleinere Masse hat.",true,""],
+   ["Herr Brummer hat recht: Der schwerere Lkw übt die größere Kraft aus.",false,"Schau auf deine beiden Pfeile: Beide sind 5000 N groß. Schwer oder leicht ändert nichts am Betrag der Kräfte."],
+   ["Herr Brummer irrt: Der Pkw drückt sogar stärker, weil er stärker verbeult wird.",false,"Die stärkere Verbeulung ist die <b>Wirkung</b> der Kraft, nicht ihre Größe. Die Kräfte sind gleich groß."]]},
+ {who:"Emma",truth:false,opts:[
+   ["Emma hat recht: Nur die Erde kann anziehen, weil sie so riesig ist.",false,"Schau auf deinen Pfeil: Der Apfel zieht die Erde an, mit <b>1 N</b>. Zu jeder Kraft gibt es eine Gegenkraft, auch bei kleinen Körpern."],
+   ["Emma irrt: Der Apfel zieht die Erde mit 1 N an. Die Erde bewegt sich nur nicht merklich, weil ihre Masse riesig ist.",true,""],
+   ["Emma irrt: Der Apfel zieht die Erde zwar an, aber viel schwächer als mit 1 N.",false,"Nicht schwächer! Kraft und Gegenkraft sind <b>immer gleich groß</b>: 1 N. Die Erde bewegt sich nur nicht merklich, weil sie so schwer ist."]]}
+];
+
+/* ---------- State ---------- */
+let S={cur:0,cases:CASES.map(()=>({attempts:0,solved:false,arrow:null,solution:false,last:null,tip:null,pick:null,reasonTries:0,reasonMsg:"",done:false,needTip:false})),finale:false,start:true,rule:false,name:""};
+let drag=null;
+
+const $=id=>document.getElementById(id);
+const svg=$("scene");
+
+function hitBody(c,x,y){
+  for(const b of c.bodies){
+    if(b.circle){const [cx,cy,r]=b.circle;if(Math.hypot(x-cx,y-cy)<=r) return b.id;continue}
+    for(const [rx,ry,w,h] of b.rects){if(x>=rx&&x<=rx+w&&y>=ry&&y<=ry+h) return b.id}
+  }
+  return null;
+}
+function fmt(v,step){const r=Math.round(v/step)*step;return (step<1? r.toFixed(1).replace(".",","): Math.round(r).toLocaleString("de-DE"))}
+
+function arrow(x1,y1,x2,y2,color,dashed){
+  const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy);if(L<2) return "";
+  const ux=dx/L,uy=dy/L,hl=Math.min(28,L*.5),hw=15;
+  const bx=x2-ux*hl,by=y2-uy*hl,px=-uy,py=ux;
+  const head=`${x2},${y2} ${bx+px*hw},${by+py*hw} ${bx-px*hw},${by-py*hw}`;
+  const da=dashed?'stroke-dasharray="10 8"':"";
+  return `<g pointer-events="none"><line x1="${x1}" y1="${y1}" x2="${bx}" y2="${by}" stroke="${INK}" stroke-width="15" stroke-linecap="round"/>
+   <line x1="${x1}" y1="${y1}" x2="${bx}" y2="${by}" stroke="${color}" stroke-width="8" stroke-linecap="round" ${da}/>
+   <polygon points="${head}" fill="${color}" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
+   <circle cx="${x1}" cy="${y1}" r="7.5" fill="#fff" stroke="${INK}" stroke-width="3.5"/></g>`;
+}
+function flabel(x,y,sub,val,color,anchor){
+  return `<text x="${x}" y="${y}" text-anchor="${anchor||"start"}" font-family="Comic Neue, sans-serif" font-weight="700" font-size="22" fill="${color}" stroke="#fff" stroke-width="6" paint-order="stroke" pointer-events="none">F<tspan dy="7" font-size="15">${sub}</tspan><tspan dy="-7"> = ${val} N</tspan></text>`;
+}
+function autoLabelPos(a){
+  const dx=a.x2-a.x1,dy=a.y2-a.y1;const mx=(a.x1+a.x2)/2,my=(a.y1+a.y2)/2;
+  if(Math.abs(dx)>=Math.abs(dy)) return {x:Math.max(10,Math.min(620,Math.min(a.x1,a.x2))),y:Math.max(26,my-30),anchor:"start"};
+  return {x:Math.min(mx+18,640),y:Math.max(26,Math.min(440,my)),anchor:"start"};
+}
+
+function render(){
+  const c=CASES[S.cur],st=S.cases[S.cur];
+  // tabs
+  const allSolved=S.cases.every(x=>x.done);
+  $("tabs").innerHTML=`<button class="tab" data-i="start" aria-current="${!!S.start}">Start</button>`+CASES.map((k,i)=>`<button class="tab" data-i="${i}" aria-current="${!S.start&&!S.finale&&i===S.cur}">Fall ${k.id}${S.cases[i].done?'<span class="st">✓</span>':''}</button>`).join("")+
+    `<button class="tab" data-i="final" ${allSolved?"":"disabled"} aria-current="${!S.start&&S.finale}" title="${allSolved?"":"Erst alle Fälle lösen"}">Ausweis</button>`;
+  $("start").hidden=!S.start;$("play").hidden=S.start||S.finale;$("finale").hidden=S.start||!S.finale;
+  if(S.start)return;
+  if(S.finale){renderFinal();return}
+
+  $("caption").textContent=`Fall ${c.id}: ${c.title}`;
+  $("lvl").textContent=c.level;
+  $("ctitle").textContent=c.title;
+  $("story").innerHTML=c.story+` <b style="color:${RED}">F<sub>${c.given.sub}</sub> = ${fmt(c.value,c.step)} N</b>`;
+  $("zeuge").innerHTML=c.witness;
+  const w=WITNESS[S.cur];
+  if(st.tip===null){
+    $("tipp").innerHTML=`<span>Hat ${w.who} recht? Tipp zuerst ab:</span><button class="btn sm ja" data-tip="1">Ja</button><button class="btn sm nein" data-tip="0">Nein</button>`;
+  }else{
+    const tipTxt=st.tip?"Ja":"Nein";
+    const res=st.done?((st.tip===w.truth)?' <span class="chip ok">richtig getippt</span>':' <span class="chip no">falsch getippt</span>'):"";
+    $("tipp").innerHTML=`<span>Dein Tipp: <span class="chip">${w.who} hat ${st.tip?"":"nicht "}recht</span>${res}</span>`;
+  }
+  renderVerhoer(c,st,w);
+  $("auftrag").innerHTML=`Auftrag: Zeichne die Gegenkraft <span class="f">F<sub>${c.target.sub.split("→")[0]}→?</sub></span> ein. Richtiger Körper, Angriffspunkt, Richtung und Betrag!`;
+
+  // scene
+  let s=DEFS+c.draw();
+  s+=arrow(c.given.x1,c.given.y1,c.given.x2,c.given.y2,RED)+flabel(c.given.lx,c.given.ly,c.given.sub,fmt(c.value,c.step),RED,c.given.anchor);
+  if(st.solution&&!st.solved){
+    const g=c.given,L=Math.hypot(g.x2-g.x1,g.y2-g.y1),[px,py]=c.target.point;
+    s+=arrow(px,py,px+c.target.dir[0]*L,py+c.target.dir[1]*L,GREEN,true);
+  }
+  const a=drag||st.arrow;
+  if(a){
+    const L=Math.hypot(a.x2-a.x1,a.y2-a.y1),gL=Math.hypot(c.given.x2-c.given.x1,c.given.y2-c.given.y1);
+    const v=fmt(L/gL*c.value,c.step);
+    s+=arrow(a.x1,a.y1,a.x2,a.y2,st.solved?GREEN:BLUE);
+    const p=autoLabelPos(a);
+    s+=flabel(p.x,p.y,st.solved?c.target.sub:"?",v,st.solved?GREEN:BLUE,p.anchor);
+  }
+  if(st.done){
+    s+=`<g class="burst">${starburst(135,160,82,54,12,"#ffd23f")}${comicText(135,155,"FALL",36,RED,-6)}${comicText(135,190,"GELÖST!",36,RED,-6)}</g>`;
+  }
+  svg.innerHTML=s;
+
+  // checks
+  const r=st.last;
+  const items=[["body","Richtiger Körper"],["point","Angriffspunkt"],["dir","Richtung"],["len","Betrag"]];
+  $("checks").innerHTML=items.map(([k,t])=>{
+    const cls=!r?"":(r[k]?"ok":"no");const m=!r?"?":(r[k]?"✓":"✗");
+    return `<li class="${cls}"><span class="m">${m}</span>${t}</li>`}).join("");
+
+  // bubble
+  const b=$("bubble");b.className="bubble";
+  $("kom2").hidden=!st.done;
+  if(st.done) $("bubble2").innerHTML=`<div class="who">Kommissarin Kraft</div><p><b>Hervorragend, Detektiv!</b></p><p>${c.msgs.win}</p>`;
+  if(st.done){b.classList.add("win");b.innerHTML=`<div class="who">Kommissarin Kraft</div><p><b>Der Pfeil stimmt!</b> Und das Verhör hast du auch gemeistert. Lies unten meinen Abschlussbericht.</p>`}
+  else if(st.solved){b.classList.add("win");b.innerHTML=`<div class="who">Kommissarin Kraft</div><p><b>Der Pfeil stimmt!</b> Jetzt kommt das Verhör: Hat ${w.who} recht? Wähle unten die passende Begründung.</p>`}
+  else if(st.tip===null){b.innerHTML=`<div class="who">Kommissarin Kraft</div><p>Bevor wir ermitteln: <b>Tipp ab</b>, ob ${w.who} recht hat. Bauchgefühl ist erlaubt! Danach kannst du den Pfeil zeichnen.</p>`+(st.needTip?`<p style="color:${RED};font-weight:700">Erst tippen, dann zeichnen!</p>`:"")}
+  else if(r){b.classList.add("bad");b.innerHTML=`<div class="who">Kommissarin Kraft</div><p>${r.msg}</p>`+(st.solution?`<p><b style="color:${GREEN}">Grün gestrichelt:</b> So sähe die Lösung aus. Zeichne sie nach!</p>`:"")}
+  else if(st.arrow){b.innerHTML=`<div class="who">Kommissarin Kraft</div><p>Sieht nach einer Spur aus. Klick auf <b>Prüfen</b>, wenn du dir sicher bist.</p>`}
+  else b.innerHTML=`<div class="who">Kommissarin Kraft</div><p>Jede Kraft hat eine Gegenkraft, und ich will sie gefunden haben! <b>Drück auf den Körper</b>, an dem die Gegenkraft angreift, und <b>zieh den Pfeil</b> in Richtung und Länge.</p>`;
+
+  $("check").disabled=!st.arrow||st.solved;
+  $("reset").disabled=st.solved;
+  $("check").hidden=st.solved;$("reset").hidden=st.solved;
+  $("solve").hidden=st.solved||st.attempts<2||st.solution;
+  $("next").hidden=!st.done;
+  $("next").textContent=S.cur<CASES.length-1?"Nächster Fall":(allSolved?"Zum Ausweis":"Offene Fälle");
+}
+
+function renderVerhoer(c,st,w){
+  const v=$("verhoer");
+  v.hidden=!st.solved;
+  if(!st.solved){v.innerHTML="";return}
+  const tipOk=st.tip===w.truth;
+  let h=`<h3>Verhör: Hat ${w.who} recht?</h3>`;
+  h+=`<p>Du hast getippt: <b>${st.tip?"Ja":"Nein"}</b>. `+(st.done?(tipOk?"Dein Bauchgefühl war richtig!":"Dein Tipp war falsch. Kein Problem, genau dafür ermitteln wir!"):"Stimmt dein Tipp? Wähle die Begründung, die zu deinen Pfeilen passt:")+`</p>`;
+  h+=`<div class="opts" role="radiogroup">`+w.opts.map((o,i)=>{
+    let cls="opt";if(st.done){cls+=" dis";if(o[1])cls+=" right"}else if(st.pick===i)cls+=(st.reasonMsg?" wrong":" sel");
+    return `<label class="${cls}"><input type="radio" name="grund" value="${i}" ${st.pick===i?"checked":""} ${st.done?"disabled":""}><span>${o[0]}</span></label>`}).join("")+`</div>`;
+  if(st.done) h+=`<span class="vstamp">${w.truth?"Aussage bestätigt":"Zeuge überführt"}</span>`;
+  else{
+    h+=`<div class="btns"><button class="btn primary" id="reasoncheck" ${st.pick===null?"disabled":""}>Begründung prüfen</button></div>`;
+    if(st.reasonMsg) h+=`<p style="color:${RED};font-weight:700">${st.reasonMsg}</p>`;
+  }
+  v.innerHTML=h;
+}
+$("tipp").addEventListener("click",e=>{
+  const b=e.target.closest("[data-tip]");if(!b)return;
+  const st=S.cases[S.cur];st.tip=b.dataset.tip==="1";st.needTip=false;render();
+});
+$("verhoer").addEventListener("change",e=>{
+  if(e.target.name!=="grund")return;const st=S.cases[S.cur];st.pick=+e.target.value;st.reasonMsg="";render();
+});
+$("verhoer").addEventListener("click",e=>{
+  if(e.target.id!=="reasoncheck")return;
+  const st=S.cases[S.cur],o=WITNESS[S.cur].opts[st.pick];if(!o)return;
+  if(o[1]){st.done=true;st.reasonMsg=""}else{st.reasonTries++;st.reasonMsg=o[2]}
+  render();
+});
+
+function evaluate(){
+  const c=CASES[S.cur],st=S.cases[S.cur],a=st.arrow;
+  const body=hitBody(c,a.x1,a.y1);
+  const dx=a.x2-a.x1,dy=a.y2-a.y1,L=Math.hypot(dx,dy);
+  const gL=Math.hypot(c.given.x2-c.given.x1,c.given.y2-c.given.y1);
+  const cos=(dx*c.target.dir[0]+dy*c.target.dir[1])/L;
+  const ratio=L/gL;
+  const res={
+    body:body===c.target.body,
+    dir:cos>=Math.cos(25*Math.PI/180),
+    len:Math.abs(ratio-1)<=0.18,
+    point:body===c.target.body&&(!c.target.contact||Math.hypot(a.x1-c.target.point[0],a.y1-c.target.point[1])<=45)
+  };
+  let msg="";
+  if(!res.body) msg=body?(c.msgs[body]||"Das ist der falsche Körper."):"Da ist gar kein Körper! Setz den Angriffspunkt direkt auf einen Körper.";
+  else if(!res.point) msg=c.msgs.point;
+  else if(!res.dir) msg=c.msgs.dir;
+  else if(!res.len) msg=ratio<1?c.msgs.short:c.msgs.long;
+  res.msg=msg;
+  st.last=res;
+  if(res.body&&res.dir&&res.len&&res.point){st.solved=true}else st.attempts++;
+  render();
+}
+
+function toSvg(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const m=svg.getScreenCTM();if(!m)return {x:0,y:0};const q=p.matrixTransform(m.inverse());return {x:Math.round(q.x),y:Math.round(q.y)}}
+svg.addEventListener("pointerdown",e=>{
+  const st=S.cases[S.cur];if(st.solved)return;
+  if(st.tip===null){st.needTip=true;render();return}
+  const p=toSvg(e);drag={x1:p.x,y1:p.y,x2:p.x,y2:p.y};
+  try{svg.setPointerCapture(e.pointerId)}catch(_){}
+  e.preventDefault();render();
+});
+svg.addEventListener("pointermove",e=>{if(!drag)return;const p=toSvg(e);drag.x2=Math.max(0,Math.min(800,p.x));drag.y2=Math.max(0,Math.min(450,p.y));render()});
+function endDrag(){
+  if(!drag)return;const st=S.cases[S.cur];
+  if(Math.hypot(drag.x2-drag.x1,drag.y2-drag.y1)>=15){st.arrow=drag;st.last=null}
+  drag=null;render();
+}
+svg.addEventListener("pointerup",endDrag);svg.addEventListener("pointercancel",endDrag);
+
+$("check").onclick=evaluate;
+$("startbtn").onclick=()=>{S.start=false;S.finale=false;render();window.scrollTo({top:0,behavior:"smooth"})};
+$("reset").onclick=()=>{const st=S.cases[S.cur];st.arrow=null;st.last=null;render()};
+$("solve").onclick=()=>{S.cases[S.cur].solution=true;render()};
+$("next").onclick=()=>{
+  const open=S.cases.findIndex(x=>!x.done);
+  if(open===-1){S.finale=true}else if(S.cur<CASES.length-1&&!S.cases[S.cur+1].done){S.cur++}else S.cur=open;
+  render();window.scrollTo({top:0,behavior:"smooth"});
+};
+$("tabs").addEventListener("click",e=>{
+  const t=e.target.closest(".tab");if(!t||t.disabled)return;
+  S.start=false;
+  if(t.dataset.i==="start"){S.start=true}else if(t.dataset.i==="final"){S.finale=true}else{S.finale=false;S.cur=+t.dataset.i}
+  drag=null;render();
+});
+
+/* ---------- Finale ---------- */
+const RULE=[
+  ["Kräfte treten immer",["paarweise","einzeln"],0,"auf. Die beiden Kräfte sind"],
+  ["",["unterschiedlich groß","gleich groß"],1,"und zeigen in"],
+  ["",["dieselbe","entgegengesetzte"],1,"Richtung. Sie greifen an"],
+  ["",["demselben Körper","verschiedenen Körpern"],1,"an."]
+];
+function buildRule(){
+  $("luecke").innerHTML=RULE.map((r,i)=>`${r[0]} <select id="r${i}" aria-label="Lücke ${i+1}"><option value="">…</option>${r[1].map((o,j)=>`<option value="${j}">${o}</option>`).join("")}</select> ${r[3]}`).join(" ");
+}
+buildRule();
+$("rulecheck").onclick=()=>{
+  let ok=true;RULE.forEach((r,i)=>{const s=$("r"+i);const good=s.value!==""&&+s.value===r[2];s.className=good?"ok":"no";if(!good)ok=false});
+  S.rule=ok;
+  $("rulemsg").innerHTML=ok?`<span style="color:${GREEN}">Richtig! Das ist das Wechselwirkungsprinzip. Dein Ausweis ist freigeschaltet.</span>`:`<span style="color:${RED}">Noch nicht ganz. Die roten Lücken nochmal überdenken!</span>`;
+  renderFinal();
+};
+$("dname").addEventListener("input",e=>{S.name=e.target.value});
+function renderFinal(){
+  const fails=S.cases.reduce((s,x)=>s+x.attempts+(x.reasonTries||0),0),helps=S.cases.filter(x=>x.solution).length;
+  const tips=S.cases.filter((x,i)=>x.tip===WITNESS[i].truth).length;
+  let rang="Anwärter/in";if(fails<=2&&helps===0)rang="Chefermittler/in";else if(fails<=6)rang="Inspektor/in";
+  $("rang").textContent=rang;
+  $("stats").textContent=`4 von 4 Fällen gelöst · ${tips} von 4 Zeugen-Tipps richtig · ${fails} Fehlversuche · ${helps}× Lösung angeschaut`;
+  $("ausweis").classList.toggle("locked",!S.rule);
+  if($("dname").value!==S.name)$("dname").value=S.name;
+}
+
+/* ---------- Hot reload ---------- */
+function start(data){
+  if(data&&data.S){try{
+    const def={attempts:0,solved:false,arrow:null,solution:false,last:null,tip:null,pick:null,reasonTries:0,reasonMsg:"",done:false,needTip:false};
+    S=Object.assign(S,data.S);S.cases=CASES.map((_,i)=>Object.assign({},def,(data.S.cases||[])[i]||{}));
+  }catch(_){}}
+  render();
+}
+window.claude?.hot?.snapshot?.(()=>({S}));
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+})();
+</script>
+</body>
+</html>
