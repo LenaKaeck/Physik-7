@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wagen-Labor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap">
+<style>
+/* Layout: Comic-Labor – oben die Fahrbahn über die volle Breite, darunter Steuerung + Messgeräte, ganz unten v-t-Diagramm und Messprotokoll. Gleicher Comic-Look wie die übrigen Seiten "Physik Klasse 7". */
+:root{
+  --paper:#fff4cf;
+  --paper-dot:#f3dc93;
+  --ink:#1b1b1f;
+  --panel:#ffffff;
+  --akte:#fbe7b5;
+  --red:#e63b2e;
+  --blue:#1f6fd1;
+  --yellow:#ffd23f;
+  --green:#2e9e5b;
+  --muted:#5b5646;
+  --font-display:"Bangers","Impact","Arial Black",sans-serif;
+  --font-body:"Comic Neue","Comic Sans MS","Chalkboard SE","Trebuchet MS",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--paper)}
+body{
+  margin:0;color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.45;
+  background-color:var(--paper);
+  background-image:radial-gradient(var(--paper-dot) 1.6px,transparent 1.8px);
+  background-size:14px 14px;
+  padding-inline:16px;padding-block:18px 44px;
+}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+
+/* Header */
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 20px}
+.back{display:inline-block;font-weight:700;font-size:15px;color:var(--ink);text-decoration:none;border-bottom:2px solid var(--ink);margin-bottom:6px}
+.back:hover{color:var(--blue);border-color:var(--blue)}
+h1{font-family:var(--font-display);font-weight:400;letter-spacing:1.5px;font-size:clamp(34px,5.5vw,54px);line-height:.95;margin:0;
+  color:var(--yellow);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:4px 4px 0 var(--ink)}
+.sub{font-weight:700;font-size:15px;margin-top:6px;color:var(--muted)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{font-family:var(--font-display);font-size:20px;letter-spacing:1px;background:var(--panel);color:var(--ink);border:3px solid var(--ink);
+  border-radius:10px 10px 4px 4px;padding:6px 14px 3px;cursor:pointer;box-shadow:3px 3px 0 var(--ink)}
+.tab[aria-current="true"]{background:var(--yellow)}
+
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px dashed var(--blue);outline-offset:3px}
+
+/* Panels */
+.panel{background:var(--panel);border:5px solid var(--ink);box-shadow:7px 7px 0 var(--ink);position:relative;min-width:0}
+.caption{position:absolute;left:-5px;top:-5px;background:var(--yellow);border:4px solid var(--ink);padding:3px 12px;
+  font-family:var(--font-display);font-size:clamp(17px,2.2vw,23px);letter-spacing:1px;z-index:2}
+.box{background:var(--panel);border:4px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:14px 16px;min-width:0}
+.box.akte{background:var(--akte)}
+.box h2{font-family:var(--font-display);font-weight:400;font-size:25px;letter-spacing:1px;margin:0 0 10px;line-height:1}
+.box h3{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:14px 0 6px}
+.box h3:first-of-type{margin-top:0}
+
+canvas{display:block;width:100%;height:auto;touch-action:none;user-select:none;-webkit-user-select:none}
+#track{aspect-ratio:1000/300;cursor:grab}
+#track.dragging{cursor:grabbing}
+.trackbar{border-top:4px solid var(--ink);padding:8px 14px;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-weight:700;font-size:15px}
+.trackbar label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.trackbar input{width:18px;height:18px;accent-color:var(--blue)}
+.trackbar .hint{color:var(--muted)}
+
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+.grid-lower{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid2,.grid-lower{grid-template-columns:1fr}}
+
+/* Buttons */
+.btns{display:flex;flex-wrap:wrap;gap:10px}
+.btn{font-family:var(--font-display);font-size:21px;letter-spacing:1px;border:3px solid var(--ink);background:var(--panel);color:var(--ink);
+  padding:5px 15px 2px;border-radius:8px;box-shadow:4px 4px 0 var(--ink);cursor:pointer;transition:transform .1s, box-shadow .1s}
+.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
+.btn.go{background:var(--green);color:#fff}
+.btn.primary{background:var(--blue);color:#fff}
+.btn.sm{font-size:18px;padding:3px 11px 0;box-shadow:3px 3px 0 var(--ink)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:4px 4px 0 var(--ink)}
+.btn.big{font-size:30px;padding:8px 26px 4px}
+
+.seg{display:inline-flex;border:3px solid var(--ink);border-radius:10px;overflow:hidden;box-shadow:3px 3px 0 var(--ink)}
+.seg button{font-family:var(--font-body);font-weight:700;font-size:16px;border:0;background:var(--panel);color:var(--ink);padding:7px 14px;cursor:pointer}
+.seg button+button{border-left:3px solid var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--yellow)}
+.seg button:disabled{cursor:not-allowed;opacity:.5}
+
+.mass{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.mass .big{font-family:var(--font-display);font-size:36px;letter-spacing:1px;line-height:1}
+.mass .small{font-weight:700;color:var(--muted)}
+.wbtn{background:#d7dde3}
+
+.slider{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.slider input[type=range]{flex:1 1 200px;accent-color:var(--red);height:28px}
+.slider output{font-family:var(--font-display);font-size:32px;letter-spacing:1px;min-width:4.2em;color:var(--red);font-variant-numeric:tabular-nums}
+.note{font-size:15px;color:var(--muted);margin:6px 0 0}
+
+/* Messgeräte */
+.meters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:520px){.meters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.meter{border:3px solid var(--ink);border-radius:10px;padding:6px 10px 4px;background:#fffdf3;min-width:0}
+.meter .lbl{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.meter .val{font-family:var(--font-display);font-size:clamp(26px,3.2vw,36px);letter-spacing:1px;line-height:1.05;font-variant-numeric:tabular-nums;white-space:nowrap}
+.meter .val small{font-family:var(--font-body);font-weight:700;font-size:15px;letter-spacing:0;margin-left:3px}
+.meter.f .val{color:var(--red)}
+.meter.v .val{color:var(--blue)}
+.meter.max{background:#fff1b8}
+.meter.a{background:#e6f7ea}
+.meter.a .val{color:var(--green)}
+.status{margin-top:10px;font-weight:700;min-height:1.45em}
+
+/* Tabelle */
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+th,td{border-bottom:2px solid #e8dcb4;padding:5px 6px;text-align:right;white-space:nowrap}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);border-bottom:3px solid var(--ink);vertical-align:bottom;white-space:normal}
+th:first-child,td:first-child{text-align:left}
+td .dot{display:inline-block;width:14px;height:14px;border-radius:50%;border:2px solid var(--ink);vertical-align:-2px;margin-right:6px}
+.hit{color:var(--green);font-weight:700}
+.empty{color:var(--muted);font-style:italic;text-align:left!important;white-space:normal}
+
+.aufgabe{border:3px dashed var(--ink);border-radius:10px;padding:10px 12px;background:#fffdf3;margin-top:14px}
+.aufgabe b{color:var(--red)}
+.merksatz{margin-top:12px;background:var(--ink);color:var(--paper);border-radius:8px;padding:10px 14px;font-weight:700}
+.merksatz em{color:var(--yellow);font-style:normal}
+
+/* Startseite */
+.startgrid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:880px){.startgrid{grid-template-columns:1fr}}
+.cover{background:#cfe9ff;background-image:radial-gradient(rgba(27,27,31,.09) 1.6px,transparent 1.8px);background-size:12px 12px;border:5px solid var(--ink);box-shadow:7px 7px 0 var(--ink);padding:52px 20px 22px;position:relative}
+.bubble{background:var(--panel);border:4px solid var(--ink);border-radius:22px;padding:12px 16px;box-shadow:4px 4px 0 var(--ink)}
+.bubble p{margin:6px 0}
+.steps{margin:0;padding:0;list-style:none;counter-reset:st;display:flex;flex-direction:column;gap:10px}
+.steps li{counter-increment:st;display:flex;gap:10px;align-items:flex-start}
+.steps li::before{content:counter(st);flex:none;width:34px;height:34px;border-radius:50%;border:3px solid var(--ink);background:var(--yellow);font-family:var(--font-display);font-size:22px;display:grid;place-items:center}
+details.lk{grid-column:1/-1;background:var(--panel);border:3px solid var(--ink);border-radius:8px;padding:8px 14px;font-size:15px}
+details.lk summary{font-weight:700;cursor:pointer}
+details.lk ul{margin:6px 0;padding-left:20px}
+details.lk li{margin:3px 0}
+@media (prefers-reduced-motion:reduce){.btn{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <a class="back" href="index.html">← Physik Klasse 7</a>
+      <h1>Wagen-Labor</h1>
+      <div class="sub">Kraft, Masse und Bewegungsänderung</div>
+    </div>
+    <nav class="tabs" aria-label="Ansicht">
+      <button class="tab" id="tabStart" aria-current="true">Start</button>
+      <button class="tab" id="tabLab" aria-current="false">Experiment</button>
+    </nav>
+  </header>
+
+  <!-- ===================== STARTSEITE ===================== -->
+  <section id="start" class="startgrid">
+    <div class="cover">
+      <div class="caption">Versuchsauftrag</div>
+      <div class="bubble">
+        <p><b>Ein Wagen, ein Federkraftmesser und ein paar Wägestücke.</b></p>
+        <p>Du ziehst den Wagen über eine 150 cm lange Fahrbahn. Wie schnell ist er am Ziel? Was ändert sich, wenn du stärker ziehst? Und was, wenn der Wagen schwerer beladen ist?</p>
+        <p>Die Fahrbahn ist reibungsfrei, so wie eine sehr gute Luftkissenbahn.</p>
+      </div>
+      <div class="btns" style="margin-top:18px"><button class="btn go big" id="startbtn">Zum Experiment</button></div>
+    </div>
+    <div class="box akte">
+      <h2>So experimentierst du</h2>
+      <ol class="steps">
+        <li><span><b>Wagen beladen:</b> Lege Wägestücke auf den Wagen. Der leere Wagen hat 500 g.</span></li>
+        <li><span><b>Ziehen:</b> Stell eine feste Kraft ein und drück auf <b>Start</b>. Oder zieh selbst an der Hand am Federkraftmesser.</span></li>
+        <li><span><b>Vergleichen:</b> Jede Fahrt landet im Messprotokoll und als Linie im Diagramm. Ändere immer nur <b>eine</b> Größe!</span></li>
+      </ol>
+      <p style="margin-bottom:0">Die <b>Zeitmarken</b> zeigen, wo der Wagen alle 0,25 s war. Werden die Abstände größer, wird der Wagen schneller.</p>
+    </div>
+
+    <details class="lk">
+      <summary>Für Lehrkräfte: Rahmenplan-Bezug &amp; Hinweise</summary>
+      <ul>
+        <li><b>Rahmenplan Physik Kl. 7, „Wechselwirkung – Kräfte“:</b> Wirkungen von Kräften (Bewegungsänderung), Abhängigkeit der Wirkung einer Kraft vom Betrag. In Klasse 7 genügen <b>Je-desto-Aussagen</b>. Das Grundgesetz F = m · a steht erst in Klasse 10 im Rahmenplan; die Simulation lässt sich dort quantitativ weiterverwenden.</li>
+        <li><b>Warum keine „nötige Kraft“ allein?</b> Auf einer reibungsfreien Bahn setzt <i>jede</i> Kraft den Wagen in Bewegung. Sinnvoll vergleichen lässt sich nur: <i>Wie viel Kraft braucht man für dieselbe Bewegungsänderung?</i> Dafür gibt es die Aufgabe „Mit 1,0 m/s ins Ziel“.</li>
+        <li><b>Geschwindigkeitszunahme pro Sekunde</b> (= mittlere Beschleunigung) ist die eigentliche Messgröße für die Bewegungsänderung. Die Endgeschwindigkeit am Ziel hängt zusätzlich von der Bahnlänge ab (v = √(2·F·s/m)) und ist deshalb nur bei gleicher Strecke vergleichbar.</li>
+        <li><b>Vorschlag für den Ablauf (ca. 20 min am Beamer):</b>
+          <br>1. Masse 500 g, Kraft 0,5 N → 1,0 N → 1,5 N: Linien im v-t-Diagramm werden steiler.
+          <br>2. Kraft 1,0 N, Masse 500 g → 1000 g → 2000 g: Linien werden flacher.
+          <br>3. Aufgabe „Mit 1,0 m/s ins Ziel“ für 500 g, 1000 g und 2000 g: Die nötige Kraft verdoppelt sich mit der Masse (ca. 0,15 N, 0,35 N, 0,65 N).
+          <br>4. Merksatz aufdecken.</li>
+        <li><b>Modus „Selbst ziehen“:</b> Gut zum Einstieg. Die SuS merken, dass man am schweren Wagen stärker ziehen muss, damit er genauso schnell ins Ziel kommt. Lässt man los, rollt der Wagen gleichförmig weiter (Ausblick auf die Trägheit).</li>
+        <li><b>Modell:</b> Federkraftmesser mit D = 15 N/m, Messbereich 3 N. Keine Reibung, kein Luftwiderstand.</li>
+      </ul>
+    </details>
+  </section>
+
+  <!-- ===================== EXPERIMENT ===================== -->
+  <section id="lab" hidden style="display:flex;flex-direction:column;gap:18px">
+    <div class="panel">
+      <div class="caption">Fahrbahn</div>
+      <canvas id="track" width="1000" height="300" role="img" aria-label="Fahrbahn mit Wagen und Federkraftmesser"></canvas>
+      <div class="trackbar">
+        <label><input type="checkbox" id="optMarks" checked> Zeitmarken (alle 0,25 s)</label>
+        <label><input type="checkbox" id="optArrow" checked> Kraftpfeil</label>
+        <span class="hint" id="trackHint"></span>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="box akte">
+        <h2>Steuerung</h2>
+        <h3>Wie wird gezogen?</h3>
+        <div class="seg" role="group" aria-label="Modus">
+          <button id="modeConst" aria-pressed="true">Feste Kraft</button>
+          <button id="modeHand" aria-pressed="false">Selbst ziehen</button>
+        </div>
+
+        <h3>Masse des Wagens</h3>
+        <div class="mass"><span class="big" id="massVal">500 g</span><span class="small" id="massKg">= 0,5 kg</span></div>
+        <div class="btns" style="margin-top:8px">
+          <button class="btn sm wbtn" data-w="100">+ 100 g</button>
+          <button class="btn sm wbtn" data-w="250">+ 250 g</button>
+          <button class="btn sm wbtn" data-w="500">+ 500 g</button>
+          <button class="btn sm" id="wUndo">− zuletzt</button>
+          <button class="btn sm" id="wClear">leeren</button>
+        </div>
+        <p class="note" id="massNote">Leerer Wagen: 500 g. Höchstens 3000 g.</p>
+
+        <div id="constCtl">
+          <h3>Zugkraft</h3>
+          <div class="slider">
+            <input type="range" id="force" min="0.05" max="3" step="0.05" value="1" aria-label="Zugkraft in Newton">
+            <output id="forceOut" for="force">1,00 N</output>
+          </div>
+        </div>
+        <div id="handCtl" hidden>
+          <p class="note" style="margin-top:12px;color:var(--ink)"><b>Drück auf die Fahrbahn und zieh die Hand nach rechts.</b> Je weiter du ziehst, desto weiter dehnt sich die Feder und desto größer ist die Kraft. Lässt du los, zieht niemand mehr.</p>
+        </div>
+
+        <div class="btns" style="margin-top:14px">
+          <button class="btn go" id="btnStart">Start</button>
+          <button class="btn" id="btnReset">Zurück zum Start</button>
+        </div>
+      </div>
+
+      <div class="box">
+        <h2>Messwerte</h2>
+        <div class="meters">
+          <div class="meter f"><div class="lbl">Kraft jetzt</div><div class="val" id="mF">0,00<small>N</small></div></div>
+          <div class="meter f max"><div class="lbl">Kraft max.</div><div class="val" id="mFmax">0,00<small>N</small></div></div>
+          <div class="meter"><div class="lbl">Zeit</div><div class="val" id="mT">0,00<small>s</small></div></div>
+          <div class="meter v"><div class="lbl">Geschw. jetzt</div><div class="val" id="mV">0,00<small>m/s</small></div></div>
+          <div class="meter v max"><div class="lbl">Geschw. max.</div><div class="val" id="mVmax">0,00<small>m/s</small></div></div>
+          <div class="meter a"><div class="lbl">Zunahme pro s</div><div class="val" id="mA">–<small>m/s pro s</small></div></div>
+        </div>
+        <div class="status" id="status"></div>
+        <p class="note">„Zunahme pro s“: Um so viel wird der Wagen im Mittel pro Sekunde schneller. Das ist die <b>Bewegungsänderung</b>.</p>
+      </div>
+    </div>
+
+    <div class="grid-lower">
+      <div class="panel">
+        <div class="caption">Geschwindigkeit über Zeit</div>
+        <canvas id="graph" width="700" height="420" role="img" aria-label="v-t-Diagramm aller Fahrten"></canvas>
+      </div>
+      <div class="box">
+        <h2>Messprotokoll</h2>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Fahrt</th><th>Masse</th><th>Kraft</th><th>Zeit bis Ziel</th><th>v am Ziel</th><th>Zunahme pro s<br>in m/s</th></tr></thead>
+            <tbody id="tbody"><tr><td class="empty" colspan="6">Noch keine Fahrt. Starte die erste!</td></tr></tbody>
+          </table>
+        </div>
+        <div class="btns" style="margin-top:10px"><button class="btn sm" id="btnClearRuns">Protokoll leeren</button></div>
+
+        <div class="aufgabe">
+          <b>Aufgabe: Mit 1,0 m/s ins Ziel!</b><br>
+          Finde mit „Feste Kraft“ heraus, welche Kraft du brauchst, damit der Wagen mit 1,0 m/s (± 0,06) ins Ziel kommt. Probier es mit 500 g, 1000 g und 2000 g. Treffer bekommen im Protokoll einen ★.
+        </div>
+
+        <div class="btns" style="margin-top:12px"><button class="btn primary sm" id="btnMerk">Merksatz aufdecken</button></div>
+        <div class="merksatz" id="merksatz" hidden>
+          <em>Je größer die Kraft</em> (bei gleicher Masse), <em>desto größer</em> die Bewegungsänderung.<br>
+          <em>Je größer die Masse</em>, <em>desto mehr Kraft</em> braucht man für dieselbe Bewegungsänderung.
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- Konstanten ---------- */
+const L_TRACK=1.5;          // m, Strecke Start → Ziel
+const D=15;                 // N/m, Federkonstante Kraftmesser
+const ROD0=0.03, CASE=0.16; // m, sichtbare Stange bei 0 N, Gehäuselänge
+const L0=ROD0+CASE;         // Abstand Haken → Ring bei 0 N
+const FMAX=3, EMAX=FMAX/D;  // Messbereich
+const CART_LEN=0.24, CART_M=500; // m, g
+const MAX_MASS=3000, MAX_PIECES=10;
+const MARK_DT=0.25;
+const COLORS=["#1f6fd1","#e63b2e","#2e9e5b","#9b4dca","#f28c28","#1b1b1f","#0aa1b5","#c2185b"];
+const INK="#1b1b1f";
+
+const $=id=>document.getElementById(id);
+const nf=(v,d)=>(Math.abs(v)<0.5*Math.pow(10,-d)?0:v).toLocaleString("de-DE",{minimumFractionDigits:d,maximumFractionDigits:d});
+
+/* ---------- Zustand ---------- */
+const S={
+  mode:"const", weights:[], F:1.0,
+  x:0, v:0, t:0, e:0, xh:L0, fNow:0, fMax:0, vMax:0,
+  running:false, finished:false, started:false,
+  marks:[], nextMark:0, samples:[], nextSample:0,
+  ptrX:null, dragging:false,
+  runs:[], runNo:0
+};
+const mass=()=>CART_M+S.weights.reduce((a,b)=>a+b,0); // g
+const massKg=()=>mass()/1000;
+
+/* ---------- Ansicht wechseln ---------- */
+function show(view){
+  $("start").hidden=view!=="start";$("lab").hidden=view!=="lab";
+  $("tabStart").setAttribute("aria-current",view==="start");$("tabLab").setAttribute("aria-current",view==="lab");
+  if(view==="lab"){resizeCanvases();}
+}
+$("tabStart").onclick=()=>show("start");
+$("tabLab").onclick=()=>show("lab");
+$("startbtn").onclick=()=>{show("lab");window.scrollTo({top:0,behavior:"smooth"})};
+
+/* ---------- Canvas-Setup (scharf auf allen Bildschirmen) ---------- */
+const tc=$("track"),tctx=tc.getContext("2d");
+const gc=$("graph"),gctx=gc.getContext("2d");
+const TW=1000,TH=300,GW=700,GH=420;
+function setup(c,ctx,w,h){
+  const dpr=Math.min(window.devicePixelRatio||1,2.5);
+  c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+function resizeCanvases(){setup(tc,tctx,TW,TH);setup(gc,gctx,GW,GH);drawTrack();drawGraph();}
+window.addEventListener("resize",resizeCanvases);
+
+/* ---------- Welt → Bildschirm ---------- */
+const PX=400, OX=120;
+const sx=x=>OX+x*PX;
+const wx=px=>(px-OX)/PX;
+const RAIL_Y=212;
+
+/* ---------- Physik ---------- */
+function resetRun(){
+  S.x=0;S.v=0;S.t=0;S.e=0;S.xh=L0;S.fNow=0;S.fMax=0;S.vMax=0;
+  S.running=false;S.finished=false;S.started=false;
+  S.marks=[0];S.nextMark=MARK_DT;S.samples=[[0,0]];S.nextSample=0.02;
+  S.dragging=false;S.ptrX=null;tc.classList.remove("dragging");
+  updateUI();
+}
+function step(dt){
+  if(S.finished) return;
+  const m=massKg();
+  if(S.mode==="const"){
+    S.e=S.running?S.F/D:0;
+    if(S.running){
+      const a=S.F/m;S.v+=a*dt;S.x+=S.v*dt;S.t+=dt;S.fNow=S.F;
+    }else S.fNow=0;
+    S.xh=S.x+L0+S.e;
+  }else{
+    // Hand folgt dem Zeiger, aber nur im Bereich 0 … Messbereich
+    let target=S.dragging&&S.ptrX!==null?S.ptrX:S.xh;
+    S.xh=Math.min(Math.max(target,S.x+L0),S.x+L0+EMAX);
+    S.e=S.xh-S.x-L0;
+    const F=D*S.e;
+    S.fNow=F;
+    if(!S.started&&F>0.02){S.started=true;S.running=true;}
+    const a=F/m;S.v+=a*dt;S.x+=S.v*dt;
+    if(S.xh<S.x+L0)S.xh=S.x+L0;  // losgelassene Hand wird mitgeschoben
+    if(S.running)S.t+=dt;
+  }
+  if(S.running){
+    S.fMax=Math.max(S.fMax,S.fNow);S.vMax=Math.max(S.vMax,S.v);
+    while(S.t>=S.nextMark){S.marks.push(S.x);S.nextMark+=MARK_DT;}
+    if(S.t>=S.nextSample){S.samples.push([S.t,S.v]);S.nextSample+=0.02;}
+    if(S.x>=L_TRACK) finish();
+  }
+}
+function finish(){
+  // auf exakte Ziellinie zurückrechnen (lineare Interpolation im letzten Schritt reicht hier)
+  S.x=L_TRACK;S.running=false;S.finished=true;S.dragging=false;tc.classList.remove("dragging");
+  S.samples.push([S.t,S.v]);
+  const color=COLORS[S.runNo%COLORS.length];S.runNo++;
+  const F=S.mode==="const"?S.F:S.fMax;
+  const hit=S.mode==="const"&&Math.abs(S.v-1)<=0.06;
+  S.runs.push({nr:S.runNo,mode:S.mode,m:mass(),F,t:S.t,v:S.v,a:S.v/S.t,samples:S.samples.slice(),color,hit});
+  renderTable();updateUI();
+}
+
+/* ---------- Zeichnen: Fahrbahn ---------- */
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function comic(ctx,txt,x,y,size,fill,rot){
+  ctx.save();ctx.translate(x,y);ctx.rotate((rot||0)*Math.PI/180);
+  ctx.font=`${size}px Bangers, Impact, sans-serif`;ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.lineWidth=Math.max(3,size/9);ctx.strokeStyle=INK;ctx.lineJoin="round";ctx.strokeText(txt,0,0);
+  ctx.fillStyle=fill;ctx.fillText(txt,0,0);ctx.restore();
+}
+function weightDims(w){return w===100?[30,12]:w===250?[36,17]:[42,22];}
+function drawCart(ctx,x,ghost){
+  const x1=sx(x-CART_LEN),x2=sx(x),w=x2-x1,top=RAIL_Y-44;
+  if(ghost){
+    ctx.save();ctx.globalAlpha=.22;ctx.strokeStyle=INK;ctx.lineWidth=3;
+    rr(ctx,x1,top,w,30,6);ctx.stroke();
+    ctx.beginPath();ctx.arc(x1+20,RAIL_Y-8,8,0,7);ctx.stroke();ctx.beginPath();ctx.arc(x2-20,RAIL_Y-8,8,0,7);ctx.stroke();
+    ctx.restore();return;
+  }
+  // Wägestücke stapeln (2 Säulen)
+  const cols=[[],[]];S.weights.forEach((wt,i)=>cols[i%2].push(wt));
+  cols.forEach((col,ci)=>{
+    let y=top;const cx=x1+w*(ci===0?0.28:0.72);
+    col.forEach(wt=>{
+      const [ww,hh]=weightDims(wt);y-=hh;
+      ctx.fillStyle="#8d949c";ctx.strokeStyle=INK;ctx.lineWidth=3;rr(ctx,cx-ww/2,y,ww,hh,3);ctx.fill();ctx.stroke();
+      ctx.fillStyle="#fff";ctx.font="bold 11px 'Comic Neue', sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+      if(hh>=12)ctx.fillText(wt===1000?"1 kg":wt+" g",cx,y+hh/2+1);
+    });
+  });
+  // Wagenkasten
+  ctx.fillStyle="#1f6fd1";ctx.strokeStyle=INK;ctx.lineWidth=4;rr(ctx,x1,top,w,30,6);ctx.fill();ctx.stroke();
+  ctx.fillStyle="#fff";ctx.font="bold 13px 'Comic Neue', sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillText(nf(mass(),0)+" g",x1+w/2,top+16);
+  // Räder
+  [x1+20,x2-20].forEach(cx=>{ctx.beginPath();ctx.arc(cx,RAIL_Y-8,9,0,7);ctx.fillStyle="#333";ctx.fill();ctx.lineWidth=3.5;ctx.stroke();
+    ctx.beginPath();ctx.arc(cx,RAIL_Y-8,3.5,0,7);ctx.fillStyle="#ccc";ctx.fill();});
+  // Haken
+  ctx.beginPath();ctx.arc(x2+4,top+16,5,0,7);ctx.lineWidth=3;ctx.strokeStyle=INK;ctx.stroke();
+}
+function drawScale(ctx){
+  const hook=sx(S.x)+8,y=RAIL_Y-28;
+  const rodEnd=sx(S.x+ROD0+S.e)+8, caseEnd=rodEnd+CASE*PX;
+  // Stange mit Skala
+  ctx.fillStyle="#fff";ctx.strokeStyle=INK;ctx.lineWidth=3;ctx.fillRect(hook,y-5,rodEnd-hook+10,10);ctx.strokeRect(hook,y-5,rodEnd-hook+10,10);
+  ctx.strokeStyle=INK;ctx.lineWidth=2;
+  for(let f=0;f<=FMAX+1e-9;f+=0.5){
+    const px=hook+(ROD0+f/D)*PX; if(px>rodEnd+1)break;
+    ctx.beginPath();ctx.moveTo(px,y-5);ctx.lineTo(px,y+(f%1===0?5:0));ctx.stroke();
+  }
+  // Gehäuse
+  ctx.fillStyle="#ffd23f";ctx.lineWidth=4;rr(ctx,rodEnd,y-11,caseEnd-rodEnd,22,5);ctx.fill();ctx.stroke();
+  ctx.fillStyle=INK;ctx.font="bold 13px 'Comic Neue', sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("0 – 3 N",(rodEnd+caseEnd)/2,y+1);
+  // Ring + Hand
+  const ring=caseEnd+8;
+  ctx.beginPath();ctx.arc(ring,y,8,0,7);ctx.lineWidth=4;ctx.stroke();
+  ctx.fillStyle="#3b6fd1";ctx.lineWidth=4;rr(ctx,ring+20,y-14,TW-ring,28,4);ctx.fill();ctx.stroke();       // Ärmel
+  ctx.fillStyle="#f6c9a0";rr(ctx,ring-2,y-15,30,30,12);ctx.fill();ctx.stroke();                             // Faust
+  ctx.lineWidth=2.5;[y-6,y+1,y+8].forEach(yy=>{ctx.beginPath();ctx.moveTo(ring+2,yy);ctx.lineTo(ring+12,yy);ctx.stroke();});
+  // Anzeige
+  const over=S.mode==="hand"&&S.e>=EMAX-1e-6&&S.fNow>0;
+  const shown=S.mode==="const"&&!S.running&&!S.finished?S.F:S.fNow;
+  comic(ctx,nf(shown,2)+" N",(rodEnd+caseEnd)/2,y-34,30,over?"#ff8a7d":"#ffd23f",-3);
+  if(over)comic(ctx,"Messbereich!",(rodEnd+caseEnd)/2,y-64,22,"#fff",-3);
+  // Kraftpfeil am Wagen
+  if($("optArrow").checked&&S.fNow>0.005){
+    const len=S.fNow/FMAX*170, ay=RAIL_Y-70-0, ax=sx(S.x)-CART_LEN*PX/2;
+    const yA=RAIL_Y-110;
+    ctx.save();ctx.lineCap="round";
+    ctx.strokeStyle=INK;ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(ax,yA);ctx.lineTo(ax+len-14,yA);ctx.stroke();
+    ctx.strokeStyle="#e63b2e";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(ax,yA);ctx.lineTo(ax+len-14,yA);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(ax+len+4,yA);ctx.lineTo(ax+len-18,yA-12);ctx.lineTo(ax+len-18,yA+12);ctx.closePath();
+    ctx.fillStyle="#e63b2e";ctx.fill();ctx.lineWidth=3.5;ctx.strokeStyle=INK;ctx.lineJoin="round";ctx.stroke();
+    ctx.restore();
+    ctx.font="bold 18px 'Comic Neue', sans-serif";ctx.textAlign="left";ctx.textBaseline="bottom";ctx.lineWidth=5;ctx.strokeStyle="#fff";
+    const lbl="F = "+nf(S.fNow,2)+" N";ctx.strokeText(lbl,ax,yA-12);ctx.fillStyle="#e63b2e";ctx.fillText(lbl,ax,yA-12);
+  }
+}
+function drawTrack(){
+  const ctx=tctx;ctx.clearRect(0,0,TW,TH);
+  // Hintergrund
+  ctx.fillStyle="#cfe9ff";ctx.fillRect(0,0,TW,TH);
+  ctx.fillStyle="rgba(27,27,31,.07)";for(let y=6;y<RAIL_Y;y+=12)for(let x=6;x<TW;x+=12){ctx.beginPath();ctx.arc(x,y,1.5,0,7);ctx.fill();}
+  // Tisch
+  ctx.fillStyle="#c68a4c";ctx.strokeStyle=INK;ctx.lineWidth=4;ctx.fillRect(-4,RAIL_Y+6,TW+8,TH-RAIL_Y);ctx.strokeRect(-4,RAIL_Y+6,TW+8,TH-RAIL_Y);
+  // Schiene
+  ctx.fillStyle="#7b8188";ctx.fillRect(sx(-0.3),RAIL_Y,sx(1.75)-sx(-0.3),8);ctx.strokeRect(sx(-0.3),RAIL_Y,sx(1.75)-sx(-0.3),8);
+  // Maßband
+  const ry=RAIL_Y+22;
+  ctx.fillStyle="#fffbe8";ctx.lineWidth=3;ctx.fillRect(sx(0)-12,ry,sx(1.5)-sx(0)+24,34);ctx.strokeRect(sx(0)-12,ry,sx(1.5)-sx(0)+24,34);
+  ctx.strokeStyle=INK;ctx.fillStyle=INK;ctx.font="bold 13px 'Comic Neue', sans-serif";ctx.textAlign="center";ctx.textBaseline="top";
+  for(let c=0;c<=150;c+=5){const px=sx(c/100);ctx.lineWidth=c%10===0?2:1;ctx.beginPath();ctx.moveTo(px,ry);ctx.lineTo(px,ry+(c%50===0?14:c%10===0?9:5));ctx.stroke();
+    if(c%50===0)ctx.fillText(c+" cm",px,ry+16);}
+  // Zeitmarken
+  if($("optMarks").checked){
+    S.marks.forEach((mx,i)=>{if(i===0)return;drawCart(ctx,mx,true);});
+    S.marks.forEach((mx,i)=>{const px=sx(mx);ctx.beginPath();ctx.arc(px,RAIL_Y+15,4.5,0,7);ctx.fillStyle="#e63b2e";ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=INK;ctx.stroke();});
+  }
+  // Start & Ziel
+  ctx.setLineDash([8,6]);ctx.strokeStyle="#2e9e5b";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(sx(0),70);ctx.lineTo(sx(0),RAIL_Y);ctx.stroke();ctx.setLineDash([]);
+  comic(ctx,"START",sx(0),56,24,"#2e9e5b",-4);
+  const fx=sx(L_TRACK);
+  ctx.fillStyle="#444";ctx.strokeStyle=INK;ctx.lineWidth=3;
+  ctx.fillRect(fx-5,52,10,RAIL_Y-52);ctx.strokeRect(fx-5,52,10,RAIL_Y-52);
+  ctx.strokeStyle="rgba(230,59,46,.75)";ctx.lineWidth=3;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(fx,62);ctx.lineTo(fx,RAIL_Y-4);ctx.stroke();ctx.setLineDash([]);
+  comic(ctx,"ZIEL",fx,38,24,"#e63b2e",4);
+  // Speedlines
+  if(S.v>0.25&&!S.finished){
+    ctx.strokeStyle=INK;ctx.lineWidth=3;ctx.lineCap="round";const bx=sx(S.x-CART_LEN)-14;
+    [RAIL_Y-40,RAIL_Y-28,RAIL_Y-16].forEach((yy,i)=>{const l=Math.min(60,S.v*28)-(i%2)*8;ctx.beginPath();ctx.moveTo(bx-l,yy);ctx.lineTo(bx,yy);ctx.stroke();});
+  }
+  drawCart(ctx,S.x,false);
+  drawScale(ctx);
+  if(S.finished) comic(ctx,"IM ZIEL! "+nf(S.v,2)+" m/s",sx(0.75),100,40,"#ffd23f",-4);
+  else if(S.mode==="hand"&&!S.started) comic(ctx,"Zieh an der Hand →",sx(0.8),110,30,"#fff",-3);
+}
+
+/* ---------- Zeichnen: v-t-Diagramm ---------- */
+function niceStep(range,n){const raw=range/n,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p;return (f<1.5?1:f<3?2:f<7?5:10)*p;}
+function drawGraph(){
+  const ctx=gctx;ctx.clearRect(0,0,GW,GH);ctx.fillStyle="#fff";ctx.fillRect(0,0,GW,GH);
+  const L=78,R=GW-24,T=64,B=GH-58;
+  let tMax=3,vMax=1;
+  const all=S.runs.map(r=>r.samples);if(S.samples.length>1&&!S.finished)all.push(S.samples);
+  all.forEach(sm=>sm.forEach(([t,v])=>{tMax=Math.max(tMax,t);vMax=Math.max(vMax,v);}));
+  const ts=niceStep(tMax,6),vs=niceStep(vMax,5);
+  tMax=Math.ceil(tMax/ts)*ts;vMax=Math.ceil(vMax*1.05/vs)*vs;
+  const X=t=>L+t/tMax*(R-L),Y=v=>B-v/vMax*(B-T);
+  // Raster
+  ctx.lineWidth=1;ctx.strokeStyle="#e8dcb4";ctx.fillStyle="#5b5646";ctx.font="bold 14px 'Comic Neue', sans-serif";
+  ctx.textAlign="center";ctx.textBaseline="top";
+  for(let t=0;t<=tMax+1e-9;t+=ts){ctx.beginPath();ctx.moveTo(X(t),T);ctx.lineTo(X(t),B);ctx.stroke();ctx.fillText(nf(t,ts<1?1:0),X(t),B+8);}
+  ctx.textAlign="right";ctx.textBaseline="middle";
+  for(let v=0;v<=vMax+1e-9;v+=vs){ctx.beginPath();ctx.moveTo(L,Y(v));ctx.lineTo(R,Y(v));ctx.stroke();ctx.fillText(nf(v,vs<1?(vs<0.1?2:1):0),L-8,Y(v));}
+  // Achsen
+  ctx.strokeStyle=INK;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(L,T-10);ctx.lineTo(L,B);ctx.lineTo(R+6,B);ctx.stroke();
+  ctx.fillStyle=INK;ctx.font="bold 15px 'Comic Neue', sans-serif";ctx.textAlign="right";ctx.textBaseline="top";ctx.fillText("Zeit t in s",R,B+30);
+  ctx.save();ctx.translate(20,(T+B)/2);ctx.rotate(-Math.PI/2);ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("Geschwindigkeit v in m/s",0,0);ctx.restore();
+  // Linien
+  const line=(sm,col,w,dash)=>{if(sm.length<2)return;ctx.save();ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineJoin="round";ctx.lineCap="round";if(dash)ctx.setLineDash(dash);
+    ctx.beginPath();sm.forEach(([t,v],i)=>i?ctx.lineTo(X(t),Y(v)):ctx.moveTo(X(t),Y(v)));ctx.stroke();ctx.restore();};
+  S.runs.forEach(r=>{line(r.samples,r.color,4.5);const [t,v]=r.samples[r.samples.length-1];
+    ctx.beginPath();ctx.arc(X(t),Y(v),6,0,7);ctx.fillStyle=r.color;ctx.fill();ctx.lineWidth=2.5;ctx.strokeStyle=INK;ctx.stroke();
+    ctx.font="bold 14px 'Comic Neue', sans-serif";ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillStyle=r.color;ctx.fillText("#"+r.nr,X(t)+9,Y(v));});
+  if(!S.finished&&S.samples.length>1)line(S.samples.concat([[S.t,S.v]]),"#888",4,[8,6]);
+  if(!S.runs.length&&S.samples.length<2){
+    ctx.fillStyle="#5b5646";ctx.font="bold 17px 'Comic Neue', sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText("Jede Fahrt erscheint hier als Linie.",(L+R)/2,(T+B)/2-12);
+    ctx.fillText("Steilere Linie = größere Bewegungsänderung",(L+R)/2,(T+B)/2+14);
+  }
+}
+
+/* ---------- Tabelle ---------- */
+function renderTable(){
+  const tb=$("tbody");
+  if(!S.runs.length){tb.innerHTML='<tr><td class="empty" colspan="6">Noch keine Fahrt. Starte die erste!</td></tr>';return;}
+  tb.innerHTML=S.runs.map(r=>`<tr><td><span class="dot" style="background:${r.color}"></span>#${r.nr} ${r.mode==="const"?"":"<small>(selbst)</small>"}</td>
+    <td>${nf(r.m,0)} g</td><td>${r.mode==="const"?"":"max. "}${nf(r.F,2)} N</td><td>${nf(r.t,2)} s</td>
+    <td>${nf(r.v,2)} m/s ${r.hit?'<span class="hit">★</span>':''}</td><td>${nf(r.a,2)}</td></tr>`).join("");
+}
+
+/* ---------- UI ---------- */
+function setVal(id,v,unit){$(id).innerHTML=v+`<small>${unit}</small>`;}
+let lastUI=0;
+function updateUI(){
+  const m=mass();
+  $("massVal").textContent=nf(m,0)+" g";$("massKg").textContent="= "+nf(m/1000,m%100?2:1)+" kg";
+  const busy=S.running;
+  document.querySelectorAll(".wbtn").forEach(b=>{const w=+b.dataset.w;b.disabled=busy||S.started&&!S.finished||m+w>MAX_MASS||S.weights.length>=MAX_PIECES;});
+  $("wUndo").disabled=busy||!S.weights.length;$("wClear").disabled=busy||!S.weights.length;
+  $("modeConst").disabled=$("modeHand").disabled=busy;
+  $("force").disabled=busy;
+  $("btnStart").hidden=S.mode!=="const";
+  $("btnStart").disabled=S.running||S.finished;
+  $("constCtl").hidden=S.mode!=="const";$("handCtl").hidden=S.mode!=="hand";
+  $("forceOut").textContent=nf(S.F,2)+" N";
+  setVal("mF",nf(S.fNow,2),"N");setVal("mFmax",nf(S.fMax,2),"N");setVal("mT",nf(S.t,2),"s");
+  setVal("mV",nf(S.v,2),"m/s");setVal("mVmax",nf(S.vMax,2),"m/s");
+  setVal("mA",S.t>0.05?nf(S.v/S.t,2):"–","m/s pro s");
+  let st="";
+  if(S.finished){const r=S.runs[S.runs.length-1];st=`Fahrt #${r.nr} im Ziel: ${nf(r.v,2)} m/s nach ${nf(r.t,2)} s.`+(r.hit?" ★ Treffer: 1,0 m/s!":"")+" Ändere eine Größe und fahr noch einmal.";}
+  else if(S.running)st="Der Wagen fährt …";
+  else st=S.mode==="const"?"Stell Masse und Kraft ein und drück auf Start.":"Zieh an der Hand, um den Wagen zu beschleunigen.";
+  $("status").textContent=st;
+  $("trackHint").textContent=S.mode==="hand"?"Drück auf die Fahrbahn und zieh nach rechts.":"";
+}
+
+$("modeConst").onclick=()=>{S.mode="const";$("modeConst").setAttribute("aria-pressed","true");$("modeHand").setAttribute("aria-pressed","false");resetRun();};
+$("modeHand").onclick=()=>{S.mode="hand";$("modeHand").setAttribute("aria-pressed","true");$("modeConst").setAttribute("aria-pressed","false");resetRun();};
+document.querySelectorAll(".wbtn").forEach(b=>b.onclick=()=>{if(S.finished)resetRun();S.weights.push(+b.dataset.w);updateUI();});
+$("wUndo").onclick=()=>{if(S.finished)resetRun();S.weights.pop();updateUI();};
+$("wClear").onclick=()=>{if(S.finished)resetRun();S.weights=[];updateUI();};
+$("force").oninput=e=>{S.F=+e.target.value;if(S.finished)resetRun();updateUI();};
+$("btnStart").onclick=()=>{if(S.finished)resetRun();S.running=true;S.started=true;updateUI();};
+$("btnReset").onclick=()=>resetRun();
+$("btnClearRuns").onclick=()=>{S.runs=[];S.runNo=0;renderTable();};
+$("btnMerk").onclick=()=>{const m=$("merksatz");m.hidden=!m.hidden;$("btnMerk").textContent=m.hidden?"Merksatz aufdecken":"Merksatz verdecken";};
+
+/* ---------- Ziehen mit Maus/Finger ---------- */
+function ptrWorld(e){const r=tc.getBoundingClientRect();return wx((e.clientX-r.left)/r.width*TW);}
+tc.addEventListener("pointerdown",e=>{
+  if(S.mode!=="hand")return;
+  if(S.finished)resetRun();
+  S.dragging=true;S.ptrX=ptrWorld(e);tc.classList.add("dragging");
+  try{tc.setPointerCapture(e.pointerId)}catch(_){}
+  e.preventDefault();
+});
+tc.addEventListener("pointermove",e=>{if(S.dragging)S.ptrX=ptrWorld(e);});
+const endDrag=()=>{S.dragging=false;tc.classList.remove("dragging");};
+tc.addEventListener("pointerup",endDrag);tc.addEventListener("pointercancel",endDrag);
+
+/* ---------- Schleife ---------- */
+let last=performance.now();
+function loop(now){
+  let dt=Math.min(0.05,(now-last)/1000);last=now;
+  const n=Math.max(1,Math.ceil(dt/0.002));for(let i=0;i<n;i++)step(dt/n);
+  if(!$("lab").hidden){
+    drawTrack();
+    if(S.running||now-lastUI>250){drawGraph();updateUI();lastUI=now;}
+  }
+  requestAnimationFrame(loop);
+}
+$("optMarks").onchange=drawTrack;$("optArrow").onchange=drawTrack;
+
+resetRun();renderTable();resizeCanvases();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{drawTrack();drawGraph();});
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
