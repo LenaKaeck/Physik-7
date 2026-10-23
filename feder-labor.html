@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Feder-Labor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap">
+<style>
+/* Layout: links der Versuchsaufbau (Stativ, Feder, Lineal, Lupe), rechts Messtabelle, Diagramm und Auswertung. Passt im Querformat ohne Scrollen auf die Tafel. Comic-Look wie die übrigen Seiten "Physik Klasse 7". */
+:root{
+  --paper:#fff4cf;
+  --paper-dot:#f3dc93;
+  --ink:#1b1b1f;
+  --panel:#ffffff;
+  --akte:#fbe7b5;
+  --red:#e63b2e;
+  --blue:#1f6fd1;
+  --yellow:#ffd23f;
+  --green:#2e9e5b;
+  --muted:#5b5646;
+  --font-display:"Bangers","Impact","Arial Black",sans-serif;
+  --font-body:"Comic Neue","Comic Sans MS","Chalkboard SE","Trebuchet MS",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--paper)}
+body{
+  margin:0;color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.4;
+  background-color:var(--paper);
+  background-image:radial-gradient(var(--paper-dot) 1.6px,transparent 1.8px);
+  background-size:14px 14px;
+  padding-inline:16px;padding-block:12px 16px;
+}
+.wrap{max-width:1500px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 20px}
+.back{display:inline-block;font-weight:700;font-size:15px;color:var(--ink);text-decoration:none;border-bottom:2px solid var(--ink);margin-bottom:4px}
+.back:hover{color:var(--blue);border-color:var(--blue)}
+h1{font-family:var(--font-display);font-weight:400;letter-spacing:1.5px;font-size:clamp(28px,4.5vw,46px);line-height:.95;margin:0;
+  color:var(--yellow);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:4px 4px 0 var(--ink)}
+
+.main{display:flex;justify-content:center}
+@media (max-width:820px){.main{grid-template-columns:1fr}}
+.left{display:flex;justify-content:center;min-width:0}
+.panel{background:var(--panel);border:5px solid var(--ink);box-shadow:7px 7px 0 var(--ink);min-width:0}
+#c{display:block;height:auto;aspect-ratio:420/660;max-width:100%;touch-action:none;user-select:none;-webkit-user-select:none}
+
+.right{display:flex;flex-direction:column;gap:14px;min-width:0}
+.seg{display:inline-flex;flex-wrap:wrap;border:3px solid var(--ink);border-radius:10px;overflow:hidden;box-shadow:3px 3px 0 var(--ink);background:var(--panel)}
+.seg button{font-family:var(--font-display);font-size:21px;letter-spacing:1px;border:0;background:var(--panel);color:var(--ink);padding:5px 14px 2px;cursor:pointer}
+.seg button+button{border-left:3px solid var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--yellow)}
+.row{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.row .lbl{font-family:var(--font-display);font-size:22px;letter-spacing:1px}
+
+.data{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,0.95fr);gap:16px;align-items:start}
+@media (max-width:1100px){.data{grid-template-columns:1fr}}
+.box{background:var(--panel);border:4px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:10px 12px;min-width:0}
+.box.akte{background:var(--akte)}
+.box h2{font-family:var(--font-display);font-weight:400;font-size:23px;letter-spacing:1px;margin:0 0 6px;line-height:1}
+
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th{font-size:14px;color:var(--muted);text-align:center;padding:2px 4px;border-bottom:3px solid var(--ink)}
+td{padding:3px 4px;text-align:center;border-bottom:2px solid #eee2bd}
+td:first-child{font-weight:700;color:var(--muted);width:2em}
+td input{width:100%;min-width:3em;font-family:var(--font-body);font-weight:700;font-size:17px;text-align:center;border:2px solid #b9ad85;border-radius:6px;padding:3px 2px;background:#fffdf3;color:var(--ink)}
+td input:focus{border-color:var(--blue);outline:none;background:#fff}
+td input.bad{border-color:var(--red);background:#ffe9e5}
+
+.btn{font-family:var(--font-display);font-size:19px;letter-spacing:1px;border:3px solid var(--ink);background:var(--panel);color:var(--ink);
+  padding:4px 13px 1px;border-radius:8px;box-shadow:3px 3px 0 var(--ink);cursor:pointer;transition:transform .1s, box-shadow .1s}
+.btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+.btn.primary{background:var(--blue);color:#fff}
+.btn.sm{font-size:16px;padding:3px 10px 0}
+#g{display:block;width:100%;height:auto;aspect-ratio:520/360}
+
+.check{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;font-weight:700}
+.check input{width:6em;font-family:var(--font-body);font-weight:700;font-size:20px;text-align:center;border:3px solid var(--ink);border-radius:8px;padding:2px 6px;background:#fffdf3}
+.fb{margin:8px 0 0;font-weight:700;min-height:1.4em}
+.fb.ok{color:var(--green)}.fb.no{color:var(--red)}
+.hint{font-size:14px;color:var(--muted);margin:4px 0 0}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px dashed var(--blue);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.btn{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <a class="back" href="index.html">← Physik Klasse 7</a>
+      <h1>Feder-Labor</h1>
+    </div>
+    <div class="row">
+      <span class="lbl">Feder:</span>
+      <div class="seg" role="group" aria-label="Feder wählen" id="springSel">
+        <button data-s="A" aria-pressed="true">Feder A</button>
+        <button data-s="B" aria-pressed="false">Feder B</button>
+        <button data-s="C" aria-pressed="false">Feder C</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="main">
+    <div class="left">
+      <div class="panel"><canvas id="c" width="420" height="660" role="img" aria-label="Stativ mit Feder, Lineal und Massestücken"></canvas></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+const INK="#1b1b1f";
+const W=420,H=660;
+const G=10;                  // N/kg, wie im Rahmenplan (100 g ≙ 1 N)
+const TOP=70;                // Aufhängung
+const L0=110;                // Länge der unbelasteten Feder in px
+const Y0=TOP+L0;             // Nullpunkt des Lineals
+const PXCM=20;               // px pro cm
+const RULER_CM=18;
+const RULER_X=262;           // linke Kante des Lineals
+const PIECE_M=50, PIECE_H=26, PIECE_W=38, N_PIECES=6;
+
+/* Federn: Verlängerung in cm als Funktion der Kraft in N */
+const SPRINGS={
+  A:{name:"Feder A",color:"#1f6fd1",D:0.25,s:F=>F/0.25},
+  B:{name:"Feder B",color:"#2e9e5b",D:0.50,s:F=>F/0.50},
+  C:{name:"Feder C",color:"#9b4dca",D:0.40,s:F=>F/0.40},
+  R:{name:"Gummiband",color:"#e63b2e",D:null,s:F=>14*(1-Math.exp(-F/1.6))}
+};
+
+const $=id=>document.getElementById(id);
+const nf=(v,d)=>v.toLocaleString("de-DE",{minimumFractionDigits:d,maximumFractionDigits:d});
+const parse=t=>{t=String(t).trim().replace(",",".");if(t==="")return null;const v=Number(t);return Number.isFinite(v)?v:NaN;};
+
+const S={spring:"A",hung:0,s:0,v:0,drag:null,tables:{A:[],B:[],C:[],R:[]}};
+const pieceOnShelf=i=>i>=S.hung; // Stücke 0..hung-1 hängen
+
+/* ---------- Größe an das Fenster anpassen ---------- */
+const c=$("c"),ctx=c.getContext("2d");
+function fit(){
+  const top=c.parentElement.getBoundingClientRect().top+window.scrollY;
+  const availH=window.innerHeight-top-10-7-16;
+  const wide=window.innerWidth>820;
+  let w=Math.min(document.querySelector(".wrap").clientWidth-12,availH*W/H);
+  w=Math.max(220,w);
+  c.style.width=w+"px";
+}
+function resize(){
+  fit();
+  const dpr=Math.min(window.devicePixelRatio||1,2.5);
+  c.width=Math.round(W*dpr);c.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener("resize",resize);
+
+/* ---------- Physik: gedämpfte Schwingung zur Ruhelage ---------- */
+function targetS(){return SPRINGS[S.spring].s(S.hung*PIECE_M/1000*G);}  // cm
+function step(dt){
+  const w=2*Math.PI*1.3,zeta=0.18;
+  const a=-w*w*(S.s-targetS())-2*zeta*w*S.v;
+  S.v+=a*dt;S.s+=S.v*dt;
+  if(S.s<-0.3){S.s=-0.3;S.v=0;}
+}
+
+/* ---------- Zeichnen ---------- */
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function shelfPos(i){return {x:100+i*44,y:H-35};}  // Mitte unten eines Stücks auf der Ablage
+function drawPiece(x,yTop,hl){
+  // Hakenkörper: Haken oben, Zylinder
+  ctx.strokeStyle=INK;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x,yTop);ctx.lineTo(x,yTop+6);ctx.stroke();
+  ctx.beginPath();ctx.arc(x,yTop-3,3.5,0,7);ctx.stroke();
+  ctx.fillStyle=hl?"#b7c2cc":"#8d949c";ctx.lineWidth=3;rr(x-PIECE_W/2,yTop+6,PIECE_W,PIECE_H-6,4);ctx.fill();ctx.stroke();
+  ctx.fillStyle="rgba(255,255,255,.35)";ctx.fillRect(x-PIECE_W/2+4,yTop+9,4,PIECE_H-12);
+  ctx.fillStyle="#fff";ctx.font="bold 12px 'Comic Neue', sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("50 g",x+2,yTop+PIECE_H/2+3);
+}
+function drawSpring(x,y1,y2,color){
+  if(S.spring==="R"){
+    ctx.strokeStyle=INK;ctx.lineWidth=9;ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(x-5,y1+6);ctx.lineTo(x-4,y2-6);ctx.moveTo(x+5,y1+6);ctx.lineTo(x+4,y2-6);ctx.stroke();
+    ctx.strokeStyle=color;ctx.lineWidth=4.5;
+    ctx.beginPath();ctx.moveTo(x-5,y1+6);ctx.lineTo(x-4,y2-6);ctx.moveTo(x+5,y1+6);ctx.lineTo(x+4,y2-6);ctx.stroke();
+    ctx.lineWidth=3;ctx.strokeStyle=INK;ctx.beginPath();ctx.arc(x,y1+6,5,Math.PI,0);ctx.stroke();ctx.beginPath();ctx.arc(x,y2-6,5,0,Math.PI);ctx.stroke();
+    return;
+  }
+  const n=14,amp=15,top=y1+10,bot=y2-10;
+  ctx.lineCap="round";ctx.lineJoin="round";
+  const path=()=>{ctx.beginPath();ctx.moveTo(x,y1);ctx.lineTo(x,top);
+    for(let i=0;i<n;i++){const ya=top+(bot-top)*(i+0.25)/n,yb=top+(bot-top)*(i+0.75)/n;ctx.lineTo(x+amp,ya);ctx.lineTo(x-amp,yb);}
+    ctx.lineTo(x,bot);ctx.lineTo(x,y2);};
+  ctx.strokeStyle=INK;ctx.lineWidth=7;path();ctx.stroke();
+  ctx.strokeStyle=color;ctx.lineWidth=3.5;path();ctx.stroke();
+}
+function drawRuler(scaleX,offY,zoom){
+  // zeichnet Lineal-Skala ab x=scaleX; offY verschiebt; zoom vergrößert (für Lupe)
+  const z=zoom||1;
+  for(let mm=0;mm<=RULER_CM*10;mm++){
+    const y=Y0+mm*PXCM/10;const yy=offY+(y-offY)*1;
+    const len=mm%10===0?18:mm%5===0?12:7;
+    ctx.strokeStyle=INK;ctx.lineWidth=(mm%10===0?2:1)/1;
+    ctx.beginPath();ctx.moveTo(scaleX,yy);ctx.lineTo(scaleX+len,yy);ctx.stroke();
+    if(mm%10===0){ctx.fillStyle=INK;ctx.font="bold 13px 'Comic Neue', sans-serif";ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText(String(mm/10),scaleX+21,yy);}
+  }
+}
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#e7f3ff";ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="rgba(27,27,31,.05)";for(let y=6;y<H;y+=12)for(let x=6;x<W;x+=12){ctx.beginPath();ctx.arc(x,y,1.4,0,7);ctx.fill();}
+  // Tisch / Ablage
+  ctx.fillStyle="#c68a4c";ctx.strokeStyle=INK;ctx.lineWidth=4;ctx.fillRect(-4,H-34,W+8,40);ctx.strokeRect(-4,H-34,W+8,40);
+  // Stativ
+  ctx.fillStyle="#9aa1a8";ctx.lineWidth=3.5;
+  ctx.fillRect(14,24,12,H-58);ctx.strokeRect(14,24,12,H-58);
+  ctx.fillRect(14,24,190,12);ctx.strokeRect(14,24,190,12);
+  rr(4,H-46,70,14,4);ctx.fill();ctx.stroke();
+  const sx=170;
+  ctx.fillRect(sx-5,36,10,TOP-36);ctx.strokeRect(sx-5,36,10,TOP-36);
+
+  // Feder
+  const sp=SPRINGS[S.spring];
+  const yEnd=Y0+S.s*PXCM;
+  drawSpring(sx,TOP,yEnd,sp.color);
+  // Haken am Federende
+  ctx.strokeStyle=INK;ctx.lineWidth=3;ctx.beginPath();ctx.arc(sx,yEnd+5,5,-Math.PI/2,Math.PI*1.2);ctx.stroke();
+
+  // Lineal
+  ctx.fillStyle="#fff7d6";ctx.strokeStyle=INK;ctx.lineWidth=3;
+  rr(RULER_X-4,Y0-16,58,RULER_CM*PXCM+32,4);ctx.fill();ctx.stroke();
+  ctx.fillStyle=INK;ctx.font="bold 12px 'Comic Neue', sans-serif";ctx.textAlign="left";ctx.textBaseline="bottom";ctx.fillText("cm",RULER_X+30,Y0-4);
+  drawRuler(RULER_X,0,1);
+
+  // Zeiger
+  ctx.strokeStyle="#e63b2e";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(sx+8,yEnd);ctx.lineTo(RULER_X-2,yEnd);ctx.stroke();
+  ctx.fillStyle="#e63b2e";ctx.beginPath();ctx.moveTo(RULER_X+4,yEnd);ctx.lineTo(RULER_X-8,yEnd-6);ctx.lineTo(RULER_X-8,yEnd+6);ctx.closePath();ctx.fill();
+
+  // angehängte Stücke
+  let y=yEnd+10;
+  for(let i=0;i<S.hung;i++){
+    if(S.drag&&S.drag.from==="hook"&&i===S.hung-1)break;
+    drawPiece(sx,y,false);y+=PIECE_H+4;
+  }
+  // Ablage
+  for(let i=S.hung;i<N_PIECES;i++){
+    if(S.drag&&S.drag.from==="shelf"&&i===S.hung)continue;
+    const p=shelfPos(i-S.hung);drawPiece(p.x,p.y-PIECE_H,false);
+  }
+  // Lupe
+  drawLens(yEnd);
+  // gezogenes Stück
+  if(S.drag)drawPiece(S.drag.x,S.drag.y-PIECE_H/2,true);
+}
+function drawLens(yEnd){
+  const cx=342,cy=Math.min(Math.max(yEnd,Y0+30),Y0+RULER_CM*PXCM-30)-0,R=50,Z=3.2;
+  // Lupe rechts neben dem Lineal, folgt dem Zeiger
+  const lx=cx+8,ly=cy;
+  ctx.save();
+  ctx.beginPath();ctx.arc(lx,ly,R,0,7);ctx.fillStyle="#fffdf3";ctx.fill();ctx.clip();
+  ctx.translate(lx,ly);ctx.scale(Z,Z);ctx.translate(-(RULER_X+12),-yEnd);
+  // Skala vergrößert
+  ctx.fillStyle="#fff7d6";ctx.fillRect(RULER_X-4,Y0-16,58,RULER_CM*PXCM+32);
+  for(let mm=0;mm<=RULER_CM*10;mm++){
+    const yy=Y0+mm*PXCM/10;const len=mm%10===0?18:mm%5===0?12:7;
+    ctx.strokeStyle=INK;ctx.lineWidth=mm%10===0?0.9:0.5;ctx.beginPath();ctx.moveTo(RULER_X,yy);ctx.lineTo(RULER_X+len,yy);ctx.stroke();
+    if(mm%10===0){ctx.fillStyle=INK;ctx.font="bold 7px 'Comic Neue', sans-serif";ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText(String(mm/10),RULER_X+20,yy);}
+  }
+  ctx.strokeStyle="#e63b2e";ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(RULER_X-14,yEnd);ctx.lineTo(RULER_X+4,yEnd);ctx.stroke();
+  ctx.restore();
+  ctx.strokeStyle=INK;ctx.lineWidth=5;ctx.beginPath();ctx.arc(lx,ly,R,0,7);ctx.stroke();
+  ctx.strokeStyle="#6b5b3e";ctx.lineWidth=9;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(lx+R*0.72,ly+R*0.72);ctx.lineTo(lx+R*1.05,ly+R*1.05);ctx.stroke();
+  ctx.strokeStyle=INK;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(lx+R*0.72,ly+R*0.72);ctx.lineTo(lx+R*1.05,ly+R*1.05);ctx.stroke();
+}
+
+/* ---------- Massestücke anhängen / abnehmen ---------- */
+function pt(e){const r=c.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H};}
+function anyShelf(p){for(let i=0;i<N_PIECES-S.hung;i++){const q=shelfPos(i);if(p.x>q.x-PIECE_W/2-6&&p.x<q.x+PIECE_W/2+6&&p.y>q.y-PIECE_H-14&&p.y<q.y+4)return true;}return false;}
+function hitHook(p){if(!S.hung)return false;const yEnd=Y0+S.s*PXCM;const yLast=yEnd+10+(S.hung-1)*(PIECE_H+4);
+  return p.x>170-PIECE_W/2-8&&p.x<170+PIECE_W/2+8&&p.y>yEnd&&p.y<yLast+PIECE_H+6;}
+function nearHook(p){const yEnd=Y0+S.s*PXCM;const yBottom=yEnd+10+S.hung*(PIECE_H+4);return Math.abs(p.x-170)<70&&p.y>Y0-40&&p.y<yBottom+60;}
+c.addEventListener("pointerdown",e=>{
+  const p=pt(e);try{c.setPointerCapture(e.pointerId)}catch(_){}
+  if(anyShelf(p)&&S.hung<N_PIECES){S.drag={from:"shelf",x:p.x,y:p.y,x0:p.x,y0:p.y};e.preventDefault();}
+  else if(hitHook(p)){S.drag={from:"hook",x:p.x,y:p.y,x0:p.x,y0:p.y};e.preventDefault();}
+});
+c.addEventListener("pointermove",e=>{
+  const p=pt(e);
+  if(S.drag){S.drag.x=p.x;S.drag.y=p.y;return;}
+  c.style.cursor=(anyShelf(p)||hitHook(p))?"grab":"default";
+});
+function up(e){
+  if(!S.drag)return;const p=pt(e),d=S.drag;S.drag=null;
+  const click=Math.hypot(p.x-d.x0,p.y-d.y0)<6;
+  if(d.from==="shelf"&&(click||nearHook(p)))S.hung++;
+  else if(d.from==="hook"&&(click||!nearHook(p)))S.hung--;
+}
+c.addEventListener("pointerup",up);c.addEventListener("pointercancel",()=>{S.drag=null;});
+
+/* ---------- Federwahl ---------- */
+document.querySelectorAll("#springSel button").forEach(b=>b.onclick=()=>{
+  S.spring=b.dataset.s;S.hung=0;S.s=0;S.v=0;
+  document.querySelectorAll("#springSel button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+});
+
+/* ---------- Schleife ---------- */
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(0.05,(now-last)/1000);last=now;
+  const n=Math.ceil(dt/0.004);for(let i=0;i<n;i++)step(dt/n);
+  draw();requestAnimationFrame(loop);
+}
+resize();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{fit();});
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
