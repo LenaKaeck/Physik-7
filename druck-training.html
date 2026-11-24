@@ -63,6 +63,8 @@ h1{font-size:28px;font-weight:600;margin:0}
 .item.sel{background:#eaf1fa;border-color:var(--accent)}
 .item .no{position:absolute;top:-10px;right:-8px;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center}
 .items.locked .item{cursor:default}
+.items.opts{grid-template-columns:1fr}
+.item.opt:disabled{color:#888;background:var(--soft);cursor:not-allowed}
 .sol{border:1px solid var(--line);border-radius:4px;background:var(--soft);padding:14px 16px;display:flex;flex-direction:column;gap:12px}
 .sol h3{font-size:19px;margin:0}
 .sol h4{margin:0 0 2px;font-size:15px;font-weight:600;color:var(--accent)}
@@ -88,7 +90,7 @@ footer button{font:inherit;background:none;border:0;text-decoration:underline;cu
   <nav class="levels" id="levels" aria-label="Level"></nav>
   <main class="card" id="card"></main>
   <footer>
-    <span>Rechne mit g = 10 N/kg. 1 m² = 10 000 cm².</span>
+    <span>1 m² = 10 000 cm²</span>
     <button id="reset" type="button">Fortschritt zurücksetzen</button>
   </footer>
 </div>
@@ -96,7 +98,6 @@ footer button{font:inherit;background:none;border:0;text-decoration:underline;cu
 <script>
 /* ---------- Aufgaben ----------
    Markierungen im Text: {F|..} Kraft, {A|..} Fläche, {p|..} Druck, {m|..} Masse, {g|..} Ortsfaktor, {q|..} gesucht */
-const G = '{g|g = 10 N/kg}';
 const TASKS = [
  /* --- Level 1-5: Grundlagen --- */
  { title:'Druck berechnen', topic:'Gesucht: p', type:'num', ask:'p',
@@ -128,84 +129,94 @@ const TASKS = [
     { em:'🎿', name:'Schneeschuh', desc:'{A|A = 0,2 m²}', pre:[], calc:'p = 120 N : 0,2 m² = <b>600 Pa</b>', p:600 } ],
    ans:'Bei gleicher Kraft gilt: Je kleiner die Fläche, desto größer der Druck. Deshalb sinkt man mit Schneeschuhen kaum ein, mit Absätzen aber tief.' },
 
- /* --- Level 6-10: Umrechnen --- */
- { title:'Das Buch', topic:'cm² umrechnen', type:'num', ask:'p',
+ /* --- Level 6-9: Umrechnen und gemischte Größen --- */
+ { title:'Das Buch', topic:'Gesucht: p, cm² umrechnen', type:'num', ask:'p',
    text:'Ein Buch drückt mit {F|12 N} auf einen Tisch. Seine Auflagefläche beträgt {A|600 cm²}. {q|Berechne den Druck in Pa.}',
    given:['{F|F = 12 N}','{A|A = 600 cm²}'],
    pre:['Fläche umrechnen: 1 m² = 10 000 cm², also 600 cm² : 10 000 = <b>0,06 m²</b>'],
    preHint:'Rechne die Fläche zuerst von cm² in m² um (1 m² = 10 000 cm²).',
    calc:'p = 12 N : 0,06 m² = <b>200 Pa</b>', answer:200,
    ans:'Das Buch übt einen Druck von 200 Pa auf den Tisch aus.' },
- { title:'Das Tischbein', topic:'cm² umrechnen', type:'num', ask:'F',
+ { title:'Die Bodenplatte', topic:'Gesucht: A', type:'num', ask:'A',
+   text:'Eine Bodenplatte hält höchstens einen Druck von {p|4 000 Pa} aus. Darauf soll eine Maschine gestellt werden, die mit {F|1 200 N} drückt. {q|Berechne die kleinste Auflagefläche der Maschine.}',
+   given:['{p|p = 4 000 Pa} (höchstens)','{F|F = 1 200 N}'], pre:[], preHint:'',
+   calc:'A = 1 200 N : 4 000 Pa = <b>0,3 m²</b>', answer:0.3,
+   ans:'Die Maschine braucht mindestens 0,3 m² Auflagefläche, sonst wird der Druck zu groß.' },
+ { title:'Das Tischbein', topic:'Gesucht: F, cm² umrechnen', type:'num', ask:'F',
    text:'Unter einem Tischbein herrscht ein Druck von {p|80 000 Pa}. Die Aufstandsfläche des Beins beträgt {A|25 cm²}. {q|Berechne die Kraft auf das Tischbein.}',
    given:['{p|p = 80 000 Pa}','{A|A = 25 cm²}'],
    pre:['Fläche umrechnen: 25 cm² : 10 000 = <b>0,0025 m²</b>'],
    preHint:'Rechne die Fläche zuerst von cm² in m² um (1 m² = 10 000 cm²).',
    calc:'F = 80 000 Pa · 0,0025 m² = <b>200 N</b>', answer:200,
    ans:'Auf das Tischbein wirkt eine Kraft von 200 N.' },
- { title:'Reifen im Vergleich', topic:'Sortieren + umrechnen', type:'sort', dir:'desc',
-   text:'Verschiedene Reifen drücken auf die Straße. {q|Sortiere sie nach dem Druck: vom größten zum kleinsten Druck.}',
-   given:['Für jeden Reifen sind Kraft und Fläche gegeben.'],
-   preHint:'Rechne die Flächen zuerst von cm² in m² um (1 m² = 10 000 cm²).',
-   items:[
-    { em:'🚲', name:'Fahrradreifen', desc:'{F|F = 240 N}, {A|A = 20 cm²}', pre:['20 cm² : 10 000 = <b>0,002 m²</b>'], calc:'p = 240 N : 0,002 m² = <b>120 000 Pa</b>', p:120000 },
-    { em:'👟', name:'Turnschuh', desc:'{F|F = 300 N}, {A|A = 150 cm²}', pre:['150 cm² : 10 000 = <b>0,015 m²</b>'], calc:'p = 300 N : 0,015 m² = <b>20 000 Pa</b>', p:20000 },
-    { em:'🚗', name:'Autoreifen', desc:'{F|F = 4 000 N}, {A|A = 200 cm²}', pre:['200 cm² : 10 000 = <b>0,02 m²</b>'], calc:'p = 4 000 N : 0,02 m² = <b>200 000 Pa</b>', p:200000 } ],
-   ans:'Der große Druck beim Autoreifen entsteht, weil die Kraft sehr groß ist, die Fläche aber nur vergleichsweise klein.' },
- { title:'Der Stuhl', topic:'Mehrere Flächen', type:'num', ask:'p',
+ { title:'Der Stuhl', topic:'Gesucht: p, mehrere Flächen', type:'num', ask:'p',
    text:'Ein Stuhl hat vier Beine. Jedes Bein hat eine Aufstandsfläche von {A|5 cm²}. Der Stuhl drückt zusammen mit dem Kind, das darauf sitzt, mit {F|400 N} auf den Boden. {q|Berechne den Druck.}',
    given:['{F|F = 400 N}','{A|A<sub>1 Bein</sub> = 5 cm²} (4 Beine)'],
    pre:['Gesamtfläche: 4 · 5 cm² = 20 cm²','Umrechnen: 20 cm² : 10 000 = <b>0,002 m²</b>'],
    preHint:'Alle vier Beine zusammen ergeben die Fläche. Dann in m² umrechnen.',
    calc:'p = 400 N : 0,002 m² = <b>200 000 Pa</b>', answer:200000,
    ans:'Unter den Stuhlbeinen herrscht ein Druck von 200 000 Pa.' },
- { title:'Die Bodenplatte', topic:'Gesucht: A', type:'num', ask:'A',
-   text:'Eine Bodenplatte hält höchstens einen Druck von {p|4 000 Pa} aus. Darauf soll eine Maschine gestellt werden, die mit {F|1 200 N} drückt. {q|Berechne die kleinste Auflagefläche der Maschine.}',
-   given:['{p|p = 4 000 Pa} (höchstens)','{F|F = 1 200 N}'], pre:[], preHint:'',
-   calc:'A = 1 200 N : 4 000 Pa = <b>0,3 m²</b>', answer:0.3,
-   ans:'Die Maschine braucht mindestens 0,3 m² Auflagefläche, sonst wird der Druck zu groß.' },
 
- /* --- Level 11-15: Mit Gewichtskraft --- */
- { title:'Der Kasten', topic:'Masse → Kraft', type:'num', ask:'p',
-   text:'Ein Kasten hat eine Masse von {m|30 kg} und steht auf einer Fläche von {A|0,5 m²}. Rechne mit '+G+'. {q|Berechne den Druck auf den Boden.}',
-   given:['{m|m = 30 kg}','{A|A = 0,5 m²}',G],
+ /* --- Level 10-13: Mehrschrittig, mit Gewichtskraft --- */
+ { title:'Das Auto', topic:'Gesucht: F, mehrere Flächen', type:'num', ask:'F',
+   text:'Ein Auto steht auf vier Reifen. Jeder Reifen berührt die Straße auf einer Fläche von {A|100 cm²}. Unter den Reifen herrscht ein Druck von {p|250 000 Pa}. {q|Berechne die Gewichtskraft des Autos.}',
+   given:['{p|p = 250 000 Pa}','{A|A<sub>1 Reifen</sub> = 100 cm²} (4 Reifen)'],
+   pre:['Gesamtfläche: 4 · 100 cm² = 400 cm²','Umrechnen: 400 cm² : 10 000 = <b>0,04 m²</b>'],
+   preHint:'Alle vier Reifen zusammen ergeben die Fläche. Dann in m² umrechnen.',
+   calc:'F = 250 000 Pa · 0,04 m² = <b>10 000 N</b>', answer:10000,
+   ans:'Die Gewichtskraft des Autos beträgt 10 000 N.' },
+ { title:'Der Kasten', topic:'Gesucht: p, Masse gegeben', type:'num', ask:'p',
+   text:'Ein Kasten hat eine Masse von {m|30 kg} und steht auf einer Fläche von {A|0,5 m²}. {q|Berechne den Druck auf den Boden.}',
+   given:['{m|m = 30 kg}','{A|A = 0,5 m²}'],
    pre:['Die Kraft ist hier nicht gegeben, aber die Gewichtskraft des Kastens drückt auf den Boden: F = m · g = 30 kg · 10 N/kg = <b>300 N</b>'],
    preHint:'Berechne aus der Masse zuerst die Gewichtskraft: F = m · g.',
    calc:'p = 300 N : 0,5 m² = <b>600 Pa</b>', answer:600,
    ans:'Der Kasten übt einen Druck von 600 Pa auf den Boden aus.' },
- { title:'Das Mädchen', topic:'Masse + 2 Flächen', type:'num', ask:'p',
-   text:'Ein Mädchen mit einer Masse von {m|40 kg} steht auf beiden Füßen. Jede Schuhsohle hat eine Fläche von {A|200 cm²}. Rechne mit '+G+'. {q|Berechne den Druck, den das Mädchen auf den Boden ausübt.}',
-   given:['{m|m = 40 kg}','{A|A<sub>1 Schuh</sub> = 200 cm²} (2 Schuhe)',G],
-   pre:['Gewichtskraft: F = 40 kg · 10 N/kg = <b>400 N</b>','Gesamtfläche: 2 · 200 cm² = 400 cm²','Umrechnen: 400 cm² : 10 000 = <b>0,04 m²</b>'],
-   preHint:'Gewichtskraft aus der Masse berechnen, beide Schuhe zusammenzählen, dann cm² in m² umrechnen.',
-   calc:'p = 400 N : 0,04 m² = <b>10 000 Pa</b>', answer:10000,
-   ans:'Das Mädchen übt einen Druck von 10 000 Pa auf den Boden aus.' },
- { title:'Tiere und Mensch', topic:'Sortieren (schwer)', type:'sort', dir:'desc',
-   text:'Vergleiche den Druck auf den Boden. Rechne mit '+G+'. {q|Sortiere vom größten zum kleinsten Druck.}',
-   given:[G+' (für alle)'],
-   preHint:'Aus der Masse die Gewichtskraft berechnen, alle Füße zusammenzählen, dann cm² in m² umrechnen.',
-   items:[
-    { em:'🧍', name:'Mensch', desc:'{m|m = 60 kg}, 2 Füße mit je {A|100 cm²}',
-      pre:['F = 60 kg · 10 N/kg = <b>600 N</b>','A = 2 · 100 cm² = 200 cm² = <b>0,02 m²</b>'], calc:'p = 600 N : 0,02 m² = <b>30 000 Pa</b>', p:30000 },
-    { em:'🐘', name:'Elefant', desc:'{m|m = 3 000 kg}, 4 Füße mit je {A|0,15 m²}',
-      pre:['F = 3 000 kg · 10 N/kg = <b>30 000 N</b>','A = 4 · 0,15 m² = <b>0,6 m²</b>'], calc:'p = 30 000 N : 0,6 m² = <b>50 000 Pa</b>', p:50000 },
-    { em:'🐱', name:'Katze', desc:'{m|m = 4 kg}, 4 Pfoten mit je {A|1 cm²}',
-      pre:['F = 4 kg · 10 N/kg = <b>40 N</b>','A = 4 · 1 cm² = 4 cm² = <b>0,0004 m²</b>'], calc:'p = 40 N : 0,0004 m² = <b>100 000 Pa</b>', p:100000 } ],
-   ans:'Die kleine Katze drückt am stärksten! Entscheidend ist nicht nur die Kraft, sondern wie klein die Fläche ist, auf die sie wirkt.' },
- { title:'Das Auto', topic:'Masse + 4 Reifen', type:'num', ask:'p',
-   text:'Ein Auto hat eine Masse von {m|1 200 kg}. Jeder der vier Reifen berührt die Straße auf einer Fläche von {A|150 cm²}. Rechne mit '+G+'. {q|Berechne den Druck, den das Auto auf die Straße ausübt.}',
-   given:['{m|m = 1 200 kg}','{A|A<sub>1 Reifen</sub> = 150 cm²} (4 Reifen)',G],
-   pre:['Gewichtskraft: F = 1 200 kg · 10 N/kg = <b>12 000 N</b>','Gesamtfläche: 4 · 150 cm² = 600 cm²','Umrechnen: 600 cm² : 10 000 = <b>0,06 m²</b>'],
-   preHint:'Gewichtskraft aus der Masse berechnen, vier Reifen zusammenzählen, dann cm² in m² umrechnen.',
-   calc:'p = 12 000 N : 0,06 m² = <b>200 000 Pa</b>', answer:200000,
-   ans:'Das Auto übt einen Druck von 200 000 Pa auf die Straße aus.' },
- { title:'Auf dünnem Eis', topic:'Gesucht: A', type:'num', ask:'A',
-   text:'Ein Lastwagen hat mit Ladung eine Masse von {m|6 000 kg}. Er soll über eine Eisfläche fahren, die höchstens einen Druck von {p|100 000 Pa} aushält. Rechne mit '+G+'. {q|Berechne die kleinste Fläche, die alle Reifen zusammen haben müssen.}',
-   given:['{m|m = 6 000 kg}','{p|p = 100 000 Pa} (höchstens)',G],
+ { title:'Der Lastwagen', topic:'Gesucht: A, Masse gegeben', type:'num', ask:'A',
+   text:'Ein Lastwagen hat mit Ladung eine Masse von {m|6 000 kg}. Er soll über eine Eisfläche fahren, die höchstens einen Druck von {p|100 000 Pa} aushält. {q|Berechne die kleinste Fläche, die alle Reifen zusammen haben müssen.}',
+   given:['{m|m = 6 000 kg}','{p|p = 100 000 Pa} (höchstens)'],
    pre:['Gewichtskraft: F = 6 000 kg · 10 N/kg = <b>60 000 N</b>'],
    preHint:'Aus der Masse zuerst die Gewichtskraft berechnen. Dann ist die Fläche gesucht.',
    calc:'A = 60 000 N : 100 000 Pa = <b>0,6 m²</b>', answer:0.6,
-   ans:'Alle Reifen zusammen brauchen mindestens 0,6 m² Auflagefläche, damit das Eis hält.' }
+   ans:'Alle Reifen zusammen brauchen mindestens 0,6 m² Auflagefläche, damit das Eis hält.' },
+ { title:'Tiere und Mensch', topic:'Sortieren (schwer)', type:'sort', dir:'desc',
+   text:'Vergleiche den Druck auf den Boden. {q|Sortiere vom größten zum kleinsten Druck.}',
+   given:['Für jedes Objekt sind Masse und Fläche gegeben.'],
+   preHint:'Aus der Masse die Gewichtskraft berechnen, alle Füße zusammenzählen, dann cm² in m² umrechnen.',
+   items:[
+    { name:'Mensch', desc:'{m|m = 60 kg}, 2 Füße mit je {A|100 cm²}',
+      pre:['F = 60 kg · 10 N/kg = <b>600 N</b>','A = 2 · 100 cm² = 200 cm² = <b>0,02 m²</b>'], calc:'p = 600 N : 0,02 m² = <b>30 000 Pa</b>', p:30000 },
+    { name:'Elefant', desc:'{m|m = 3 000 kg}, 4 Füße mit je {A|0,15 m²}',
+      pre:['F = 3 000 kg · 10 N/kg = <b>30 000 N</b>','A = 4 · 0,15 m² = <b>0,6 m²</b>'], calc:'p = 30 000 N : 0,6 m² = <b>50 000 Pa</b>', p:50000 },
+    { name:'Katze', desc:'{m|m = 4 kg}, 4 Pfoten mit je {A|1 cm²}',
+      pre:['F = 4 kg · 10 N/kg = <b>40 N</b>','A = 4 · 1 cm² = 4 cm² = <b>0,0004 m²</b>'], calc:'p = 40 N : 0,0004 m² = <b>100 000 Pa</b>', p:100000 } ],
+   ans:'Die kleine Katze drückt am stärksten! Entscheidend ist nicht nur die Kraft, sondern wie klein die Fläche ist, auf die sie wirkt.' },
+
+ /* --- Level 14-15: Beurteilen (Anforderungsbereich III, Transfer) --- */
+ { title:'Anna auf dem Eis', topic:'Beurteilen', type:'choice', ask:'p',
+   text:'Eine Eisfläche hält höchstens einen Druck von {p|20 000 Pa} aus. Anna hat eine Masse von {m|50 kg} und steht auf beiden Füßen. Jede Schuhsohle hat eine Fläche von {A|200 cm²}. {q|Beurteile, ob das Eis Anna trägt. Wähle die richtige Aussage.}',
+   given:['{m|m = 50 kg}','{A|A<sub>1 Schuh</sub> = 200 cm²} (2 Schuhe)','{p|p<sub>Eis</sub> = 20 000 Pa} (höchstens)'],
+   pre:['Gewichtskraft: F = 50 kg · 10 N/kg = <b>500 N</b>','Gesamtfläche: 2 · 200 cm² = 400 cm² = <b>0,04 m²</b>'],
+   preHint:'Berechne den Druck, den Anna ausübt, und vergleiche ihn mit dem Druck, den das Eis aushält.',
+   calc:'p = 500 N : 0,04 m² = <b>12 500 Pa</b><br>Vergleich: 12 500 Pa &lt; 20 000 Pa',
+   opts:[
+    { t:'Das Eis bricht ein, weil Anna mit 50 kg zu schwer ist.', ok:false, why:'Die Masse allein reicht nicht für die Beurteilung. Es kommt auf den Druck an, also auch auf die Fläche.' },
+    { t:'Das Eis trägt Anna, weil sie einen Druck von 12 500 Pa ausübt und das Eis bis 20 000 Pa aushält.', ok:true, why:'Richtig: Der Druck (12 500 Pa) ist kleiner als der erlaubte Druck (20 000 Pa).' },
+    { t:'Das Eis trägt Anna, weil ihre Gewichtskraft 500 N beträgt und das kleiner als 20 000 Pa ist.', ok:false, why:'Eine Kraft (N) und ein Druck (Pa) lassen sich nicht vergleichen. Zuerst muss der Druck berechnet werden.' },
+    { t:'Das Eis bricht ein, weil Anna mit 25 000 Pa mehr als 20 000 Pa ausübt.', ok:false, why:'25 000 Pa gelten nur, wenn Anna auf einem Fuß steht. Sie steht aber auf beiden Füßen (400 cm²).' } ],
+   ans:'Das Eis trägt Anna: 12 500 Pa &lt; 20 000 Pa.' },
+ { title:'Toms Behauptung', topic:'Beurteilen', type:'choice', ask:'p',
+   text:'Tom behauptet: „Ein Elefant übt immer einen größeren Druck auf den Boden aus als eine Frau mit Stöckelschuhen, weil er viel schwerer ist." Der Elefant hat eine Masse von {m|3 000 kg} und steht auf vier Füßen mit je {A|0,15 m²}. Die Frau hat eine Masse von {m|60 kg}. Ihre beiden Absätze haben zusammen eine Fläche von {A|8 cm²}. {q|Beurteile Toms Behauptung. Wähle die richtige Aussage.}',
+   given:['Elefant: {m|m = 3 000 kg}, 4 Füße mit je {A|0,15 m²}','Frau: {m|m = 60 kg}, Absätze zusammen {A|8 cm²}'],
+   pre:['Elefant: F = 3 000 kg · 10 N/kg = <b>30 000 N</b>, A = 4 · 0,15 m² = <b>0,6 m²</b>','Frau: F = 60 kg · 10 N/kg = <b>600 N</b>, A = 8 cm² : 10 000 = <b>0,0008 m²</b>'],
+   preHint:'Berechne den Druck für beide getrennt und vergleiche die Drücke, nicht die Kräfte.',
+   calc:'Elefant: p = 30 000 N : 0,6 m² = <b>50 000 Pa</b><br>Frau: p = 600 N : 0,0008 m² = <b>750 000 Pa</b>',
+   opts:[
+    { t:'Die Behauptung stimmt, weil der Elefant mit 30 000 N viel stärker drückt als die Frau mit 600 N.', ok:false, why:'Verglichen wurde die Kraft. Entscheidend für den Druck ist aber Kraft und Fläche zusammen.' },
+    { t:'Die Behauptung stimmt nicht, weil die Frau mit 750 000 Pa einen größeren Druck ausübt als der Elefant mit 50 000 Pa.', ok:true, why:'Richtig: Die Frau drückt auf eine sehr kleine Fläche, deshalb ist ihr Druck viel größer.' },
+    { t:'Die Behauptung stimmt nicht, weil beide denselben Druck ausüben, wenn sie auf dem Boden stehen.', ok:false, why:'Der Druck hängt von der Kraft und von der Fläche ab. Er ist daher nicht für alle gleich.' },
+    { t:'Die Behauptung lässt sich nicht beurteilen, weil man Drücke nur bei gleicher Fläche vergleichen kann.', ok:false, why:'Man kann Drücke immer vergleichen, wenn man sie mit p = F : A berechnet hat.' } ],
+   ans:'Toms Behauptung ist falsch: Die Frau übt mit 750 000 Pa einen größeren Druck aus als der Elefant mit 50 000 Pa.' }
 ];
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -243,14 +254,14 @@ function triBlock(ask){
 const list = a => `<ul>${a.map(x=>`<li>${mk(x)}</li>`).join('')}</ul>`;
 
 /* ---------- Zustand ---------- */
-const KEY='druck-training-v1';
+const KEY='druck-training-v2';
 let prog = {coins:Array(TASKS.length).fill(null)};
 try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s&&Array.isArray(s.coins)&&s.coins.length===TASKS.length) prog=s; }catch(e){}
 const save=()=>{ try{localStorage.setItem(KEY,JSON.stringify(prog));}catch(e){} };
 let cur = Math.max(0, prog.coins.findIndex(c=>c===null)); if(prog.coins.every(c=>c!==null)) cur=0;
 let st;
 const order = t => t.items.map((_,i)=>i).sort((a,b)=>t.dir==='asc'?t.items[a].p-t.items[b].p:t.items[b].p-t.items[a].p);
-const newState = () => ({attempts:0,tips:0,done:false,failed:false,msg:'',msgCls:'',seq:[],val:'',viewOnly:false});
+const newState = () => ({attempts:0,tips:0,done:false,failed:false,msg:'',msgCls:'',seq:[],sel:-1,wrong:[],val:'',viewOnly:false});
 const ALLE = /[?&]alle\b/.test(location.search); /* Lehrkraft-Ansicht: druck-training.html?alle schaltet alle Level frei */
 function unlocked(i){ return ALLE || i===0 || prog.coins[i-1]!==null; }
 function total(){ return prog.coins.reduce((a,c)=>a+(c||0),0); }
@@ -258,6 +269,7 @@ function total(){ return prog.coins.reduce((a,c)=>a+(c||0),0); }
 /* ---------- Lösungs-/Tipp-Bausteine ---------- */
 function given(t){ return `<div><h4>Gegeben</h4>${list(t.given)}</div>`; }
 function sought(t){
+  if(t.type==='choice') return `<div><h4>Gesucht</h4>${mk('{q|Beurteilung}')}: Dafür muss der Druck {p|p} berechnet und verglichen werden.</div>`.replace('{p|p}',mk('{p|p}'));
   return t.type==='num'
    ? `<div><h4>Gesucht</h4>${mk(`{q|${NAME[t.ask]} in ${UNIT[t.ask]}}`)}</div>`
    : `<div><h4>Gesucht</h4>${mk('{q|Druck p}')} von jedem Objekt, danach sortieren</div>`;
@@ -269,6 +281,7 @@ function tip2(t){
 }
 function tip3(t){
   if(t.type==='num') return `<div class="tipbox hl"><h4>Tipp 3: Die Rechnung</h4>${t.pre.length?list(t.pre):''}<div class="calc">${mk(t.calc)}</div><div style="margin-top:6px">Tippe das Ergebnis ein, um die Aufgabe abzuschließen.</div></div>`;
+  if(t.type==='choice') return `<div class="tipbox hl"><h4>Tipp 3: Die Rechnung</h4>${list(t.pre)}<div class="calc">${mk(t.calc)}</div><div style="margin-top:6px">Wähle jetzt die passende Aussage aus.</div></div>`;
   const o=order(t);
   return `<div class="tipbox hl"><h4>Tipp 3: Alle Drücke</h4>${list(t.items.map(it=>`<b>${it.name}</b>: ${it.calc.replace(/^p = .* = /,'p = ')}`))}<div>Jetzt nur noch richtig ${t.dir==='asc'?'aufsteigend':'absteigend'} sortieren.</div></div>`;
 }
@@ -280,6 +293,13 @@ function solution(t){
     h+=`<div><h4>Rechendreieck</h4>${triBlock(t.ask)}</div>`;
     h+=`<div><h4>Einsetzen und rechnen</h4><div class="calc">${mk(t.calc)}</div></div>`;
     h+=`<div class="ans">Antwort: ${t.ans}</div>`;
+  }else if(t.type==='choice'){
+    h+=given(t)+sought(t);
+    h+=`<div><h4>Umrechnen / Zwischenschritt</h4>${list(t.pre)}</div>`;
+    h+=`<div><h4>Rechendreieck</h4>${triBlock('p')}</div>`;
+    h+=`<div><h4>Einsetzen und rechnen</h4><div class="calc">${mk(t.calc)}</div></div>`;
+    h+=`<div><h4>Die Aussagen im Überblick</h4><ul>${t.opts.map(o=>`<li><b>${o.ok?'✓ richtig':'✗ falsch'}:</b> ${o.t}<br><i>${o.why}</i></li>`).join('')}</ul></div>`;
+    h+=`<div class="ans">Ergebnis: ${t.ans}</div>`;
   }else{
     h+=given(t)+`<div><h4>Gesucht</h4>${mk('{q|Druck p}')} jedes Objekts, danach sortieren</div>`;
     h+=`<div><h4>Rechendreieck</h4>${triBlock('p')}${t.preHint?`<div class="rule">⚠ ${t.preHint}</div>`:''}</div>`;
@@ -317,11 +337,16 @@ function render(keepFocus){
         return `<button type="button" class="item ${n>=0?'sel':''}" data-it="${i}" ${lock?'disabled':''} aria-pressed="${n>=0}"><span class="nm">${it.name}</span><span>${mk(it.desc)}</span>${n>=0?`<span class="no">${n+1}</span>`:''}</button>`;}).join('')+`</div>`;
     if(!solved) h+=`<div class="rule">Tippe die Objekte in der richtigen Reihenfolge an (${t.dir==='asc'?'kleinster':'größter'} Druck zuerst). Nochmal tippen nimmt ein Objekt zurück.</div>`;
   }
+  if(t.type==='choice'){
+    h+=`<div class="items opts ${rv?'rv':''}" role="radiogroup" aria-label="Aussagen">`+
+      t.opts.map((o,i)=>{ const w=st.wrong.includes(i), s=st.sel===i;
+        return `<button type="button" class="item opt ${s?'sel':''}" data-op="${i}" role="radio" aria-checked="${s}" ${solved||w?'disabled':''}>${mk(o.t)}${w?'<small> (schon ausgeschlossen)</small>':''}</button>`;}).join('')+`</div>`;
+  }
   if(!solved){
     h+=`<div class="status"><span>Versuch <b>${st.attempts+1}</b> von 2</span><span>Tipps genutzt: <b>${st.tips}</b> von 3</span><span>Mögliche Münzen jetzt: ${coins(potential())}</span></div>`;
     h+=`<div class="actions">`;
     if(t.type==='num') h+=`<label class="answer" for="inp"><span class="sr" style="position:absolute;left:-9999px">Antwort</span></label><div class="field"><input id="inp" inputmode="decimal" autocomplete="off" placeholder="Ergebnis" value="${st.val}" aria-label="Deine Antwort in ${UNIT[t.ask]}"><span>${UNIT[t.ask]}</span></div>`;
-    h+=`<button class="btn" id="check" type="button" ${t.type==='sort'&&st.seq.length<t.items.length?'disabled':''}>Prüfen</button>`;
+    h+=`<button class="btn" id="check" type="button" ${(t.type==='sort'&&st.seq.length<t.items.length)||(t.type==='choice'&&st.sel<0)?'disabled':''}>Prüfen</button>`;
     h+=st.tips<3?`<button class="btn tip" id="tip" type="button">Tipp ${st.tips+1} (−1 ${coin()})</button>`:'';
     h+=`</div>`;
   }
@@ -347,7 +372,7 @@ function finish(coinsEarned, failed){
   st.done=true; st.failed=failed; prog.coins[cur]=coinsEarned; save();
   const left = (st.tips>0 && coinsEarned===0 && !failed)? ' Mit so vielen Tipps gibt es keine Münzen mehr.':'';
   if(failed){ st.msg='Leider wieder nicht richtig. Schau dir den Lösungsweg genau an, damit du es beim nächsten Mal schaffst.'; st.msgCls='bad'; }
-  else { st.msg=(st.attempts===0?'Richtig! ':'Jetzt stimmt es! ')+(coinsEarned>0?`Du bekommst ${coinsEarned} ${coinsEarned===1?'Münze':'Münzen'}.`:'Richtig, aber diesmal gibt es keine Münzen.')+left; st.msgCls='good'; }
+  else { st.msg=(coinsEarned>0?(st.attempts===0?'Richtig! ':'Jetzt stimmt es! ')+`Du bekommst ${coinsEarned} ${coinsEarned===1?'Münze':'Münzen'}.`:'Richtig, aber diesmal gibt es keine Münzen.')+left; st.msgCls='good'; }
 }
 function checkAnswer(ok){
   if(st.done) return;
@@ -356,7 +381,7 @@ function checkAnswer(ok){
   else{
     st.attempts++;
     if(st.attempts>=2) finish(0,true);
-    else { st.msg='Nicht ganz richtig. Du hast noch einen zweiten Versuch (dann gibt es höchstens 2 Münzen).'; st.msgCls='bad'; if(TASKS[cur].type==='sort') st.seq=[]; }
+    else { st.msg='Nicht ganz richtig. Du hast noch einen zweiten Versuch (dann gibt es höchstens 2 Münzen).'; st.msgCls='bad'; if(TASKS[cur].type==='sort') st.seq=[]; if(TASKS[cur].type==='choice'){ st.wrong.push(st.sel); st.sel=-1; } }
   }
   render();
 }
@@ -364,7 +389,8 @@ function select(i){ cur=i; st=newState(); if(prog.coins[i]!==null){ st.done=true
 
 document.addEventListener('click',e=>{
   const lv=e.target.closest('.lv'); if(lv&&!lv.disabled){ select(+lv.dataset.i); return; }
-  const it=e.target.closest('.item'); if(it&&!st.done){
+  const op=e.target.closest('.opt'); if(op&&!st.done){ st.sel=+op.dataset.op; st.msg=''; st.msgCls=''; render(); const b=document.querySelector(`.opt[data-op="${st.sel}"]`); if(b)b.focus(); return; }
+  const it=e.target.closest('.item[data-it]'); if(it&&!st.done){
     const i=+it.dataset.it, p=st.seq.indexOf(i); if(p>=0) st.seq.splice(p,1); else st.seq.push(i);
     st.msg=''; st.msgCls=''; render(); const b=document.querySelector(`.item[data-it="${i}"]`); if(b)b.focus(); return; }
   const id=e.target.id;
@@ -374,7 +400,8 @@ document.addEventListener('click',e=>{
       const v=parseNum($('inp').value); st.val=$('inp').value;
       if(isNaN(v)){ st.msg='Bitte gib eine Zahl ein, zum Beispiel 2500 oder 0,5.'; st.msgCls='info'; render(true); return; }
       checkAnswer(Math.abs(v-t.answer)<=Math.abs(t.answer)*1e-6);
-    } else checkAnswer(order(t).every((x,k)=>st.seq[k]===x));
+    } else if(t.type==='choice') checkAnswer(!!t.opts[st.sel]&&t.opts[st.sel].ok);
+    else checkAnswer(order(t).every((x,k)=>st.seq[k]===x));
   }
   else if(id==='tip'){
     if(st.tips<3){ const t=TASKS[cur]; if(t.type==='num') st.val=($('inp')||{}).value||''; st.tips++; st.msg=st.tips===3?'Mit Tipp 3 ist die Lösung verraten, dafür gibt es für diese Aufgabe keine Münzen mehr.':`Tipp ${st.tips} geholt: 1 Münze weniger möglich.`; st.msgCls='info'; render(); }
