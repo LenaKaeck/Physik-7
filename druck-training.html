@@ -115,11 +115,17 @@ const TASKS = [
    given:['{F|F = 3 000 N}','{p|p = 1 500 Pa}'], pre:[], preHint:'',
    calc:'A = 3 000 N : 1 500 Pa = <b>2 m²</b>', answer:2,
    ans:'Der Betonklotz hat eine Auflagefläche von 2 m².' },
- { title:'Der Fahrradreifen', topic:'Gesucht: F', type:'num', ask:'F',
-   text:'Ein Fahrradreifen übt auf die Straße einen Druck von {p|200 000 Pa} aus. Die Fläche, mit der er die Straße berührt, ist nur {A|0,001 m²} groß. {q|Berechne die Kraft, mit der der Reifen auf die Straße drückt.}',
-   given:['{p|p = 200 000 Pa}','{A|A = 0,001 m²}'], pre:[], preHint:'',
-   calc:'F = 200 000 Pa · 0,001 m² = <b>200 N</b>', answer:200,
-   ans:'Der Reifen drückt mit 200 N auf die Straße.' },
+ { title:'Bens Rechnung', topic:'Fehler finden', type:'choice', ask:'F',
+   note:'Dafür muss die Kraft {F|F} richtig berechnet werden.',
+   text:'Ben soll die Kraft berechnen, mit der eine Kiste auf den Boden drückt. Gegeben sind der Druck {p|300 Pa} und die Fläche {A|4 m²}. Ben rechnet: F = 300 Pa : 4 m² = 75 N. {q|Beurteile Bens Rechnung. Wähle die richtige Aussage.}',
+   given:['{p|p = 300 Pa}','{A|A = 4 m²}'], pre:[], preHint:'Welche Größe ist gesucht? Verdecke sie im Rechendreieck.',
+   calc:'F = p · A = 300 Pa · 4 m² = <b>1 200 N</b>',
+   opts:[
+    { t:'Die Rechnung stimmt, weil man bei Druckaufgaben immer durch die Fläche teilt.', ok:false, why:'Durch die Fläche teilt man nur, wenn der Druck gesucht ist (p = F : A). Hier ist die Kraft gesucht.' },
+    { t:'Die Rechnung ist falsch: Ben hätte F = p · A rechnen müssen, das ergibt 1 200 N.', ok:true, why:'Richtig: Wenn F gesucht ist, stehen p und A im Rechendreieck nebeneinander, also wird multipliziert.' },
+    { t:'Die Rechnung ist falsch: Ben hätte F = A : p rechnen müssen, das ergibt etwa 0,013 N.', ok:false, why:'Auch das ist die falsche Formel. Im Rechendreieck steht F oben, A und p stehen unten nebeneinander.' },
+    { t:'Die Rechnung stimmt, nur die Einheit müsste Pa statt N sein.', ok:false, why:'Eine Kraft wird in N angegeben. Der Fehler liegt in der Formel, nicht in der Einheit.' } ],
+   ans:'Ben hat die falsche Formel benutzt. Richtig ist F = p · A = 1 200 N.' },
  { title:'Schuhe sortieren', topic:'Sortieren', type:'sort', dir:'asc',
    text:'Drei Schuhe werden jeweils mit derselben Kraft von {F|120 N} belastet. {q|Sortiere sie nach dem Druck auf den Boden: vom kleinsten zum größten Druck.}',
    given:['{F|F = 120 N} (bei allen Schuhen gleich)'], preHint:'',
@@ -137,6 +143,17 @@ const TASKS = [
    preHint:'Rechne die Fläche zuerst von cm² in m² um (1 m² = 10 000 cm²).',
    calc:'p = 12 N : 0,06 m² = <b>200 Pa</b>', answer:200,
    ans:'Das Buch übt einen Druck von 200 Pa auf den Tisch aus.' },
+ { title:'Ziegelstein in drei Lagen', topic:'Entscheiden', type:'choice', ask:'p',
+   note:'Dafür muss der Druck {p|p} für jede Lage berechnet werden.',
+   text:'Ein Ziegelstein drückt mit {F|40 N} auf den Boden. Er kann flach ({A|0,08 m²}), hochkant ({A|0,04 m²}) oder auf der Schmalseite ({A|0,02 m²}) liegen. {q|Entscheide, in welcher Lage der Druck am größten ist. Wähle die richtige Aussage.}',
+   given:['{F|F = 40 N} (in jeder Lage gleich)','{A|A<sub>flach</sub> = 0,08 m²}, {A|A<sub>hochkant</sub> = 0,04 m²}, {A|A<sub>Schmalseite</sub> = 0,02 m²}'], pre:[], preHint:'',
+   calc:'Flach: p = 40 N : 0,08 m² = <b>500 Pa</b><br>Hochkant: p = 40 N : 0,04 m² = <b>1 000 Pa</b><br>Schmalseite: p = 40 N : 0,02 m² = <b>2 000 Pa</b>',
+   opts:[
+    { t:'Flach: Dort ist die Fläche am größten, deshalb ist auch der Druck am größten.', ok:false, why:'Bei gleicher Kraft ist der Druck bei großer Fläche am kleinsten (nur 500 Pa).' },
+    { t:'Hochkant: Mit 1 000 Pa ist der Druck dort am größten.', ok:false, why:'Auf der Schmalseite ist der Druck mit 2 000 Pa noch größer.' },
+    { t:'Auf der Schmalseite: Mit 2 000 Pa ist der Druck dort am größten, weil die Fläche am kleinsten ist.', ok:true, why:'Richtig: Bei gleicher Kraft gilt: Je kleiner die Fläche, desto größer der Druck.' },
+    { t:'In allen Lagen ist der Druck gleich, weil die Kraft immer 40 N beträgt.', ok:false, why:'Gleich bleibt nur die Kraft. Der Druck ändert sich mit der Fläche.' } ],
+   ans:'Auf der Schmalseite ist der Druck am größten (2 000 Pa), flach am kleinsten (500 Pa).' },
  { title:'Die Bodenplatte', topic:'Gesucht: A', type:'num', ask:'A',
    text:'Eine Bodenplatte hält höchstens einen Druck von {p|4 000 Pa} aus. Darauf soll eine Maschine gestellt werden, die mit {F|1 200 N} drückt. {q|Berechne die kleinste Auflagefläche der Maschine.}',
    given:['{p|p = 4 000 Pa} (höchstens)','{F|F = 1 200 N}'], pre:[], preHint:'',
@@ -149,13 +166,6 @@ const TASKS = [
    preHint:'Rechne die Fläche zuerst von cm² in m² um (1 m² = 10 000 cm²).',
    calc:'F = 80 000 Pa · 0,0025 m² = <b>200 N</b>', answer:200,
    ans:'Auf das Tischbein wirkt eine Kraft von 200 N.' },
- { title:'Der Stuhl', topic:'Gesucht: p, mehrere Flächen', type:'num', ask:'p',
-   text:'Ein Stuhl hat vier Beine. Jedes Bein hat eine Aufstandsfläche von {A|5 cm²}. Der Stuhl drückt zusammen mit dem Kind, das darauf sitzt, mit {F|400 N} auf den Boden. {q|Berechne den Druck.}',
-   given:['{F|F = 400 N}','{A|A<sub>1 Bein</sub> = 5 cm²} (4 Beine)'],
-   pre:['Gesamtfläche: 4 · 5 cm² = 20 cm²','Umrechnen: 20 cm² : 10 000 = <b>0,002 m²</b>'],
-   preHint:'Alle vier Beine zusammen ergeben die Fläche. Dann in m² umrechnen.',
-   calc:'p = 400 N : 0,002 m² = <b>200 000 Pa</b>', answer:200000,
-   ans:'Unter den Stuhlbeinen herrscht ein Druck von 200 000 Pa.' },
 
  /* --- Level 10-13: Mehrschrittig, mit Gewichtskraft --- */
  { title:'Das Auto', topic:'Gesucht: F, mehrere Flächen', type:'num', ask:'F',
@@ -194,6 +204,7 @@ const TASKS = [
 
  /* --- Level 14-15: Beurteilen (Anforderungsbereich III, Transfer) --- */
  { title:'Anna auf dem Eis', topic:'Beurteilen', type:'choice', ask:'p',
+   note:'Dafür muss der Druck {p|p} berechnet und verglichen werden.',
    text:'Eine Eisfläche hält höchstens einen Druck von {p|20 000 Pa} aus. Anna hat eine Masse von {m|50 kg} und steht auf beiden Füßen. Jede Schuhsohle hat eine Fläche von {A|200 cm²}. {q|Beurteile, ob das Eis Anna trägt. Wähle die richtige Aussage.}',
    given:['{m|m = 50 kg}','{A|A<sub>1 Schuh</sub> = 200 cm²} (2 Schuhe)','{p|p<sub>Eis</sub> = 20 000 Pa} (höchstens)'],
    pre:['Gewichtskraft: F = 50 kg · 10 N/kg = <b>500 N</b>','Gesamtfläche: 2 · 200 cm² = 400 cm² = <b>0,04 m²</b>'],
@@ -206,6 +217,7 @@ const TASKS = [
     { t:'Das Eis bricht ein, weil Anna mit 25 000 Pa mehr als 20 000 Pa ausübt.', ok:false, why:'25 000 Pa gelten nur, wenn Anna auf einem Fuß steht. Sie steht aber auf beiden Füßen (400 cm²).' } ],
    ans:'Das Eis trägt Anna: 12 500 Pa &lt; 20 000 Pa.' },
  { title:'Toms Behauptung', topic:'Beurteilen', type:'choice', ask:'p',
+   note:'Dafür müssen die Drücke {p|p} beider berechnet und verglichen werden.',
    text:'Tom behauptet: „Ein Elefant übt immer einen größeren Druck auf den Boden aus als eine Frau mit Stöckelschuhen, weil er viel schwerer ist." Der Elefant hat eine Masse von {m|3 000 kg} und steht auf vier Füßen mit je {A|0,15 m²}. Die Frau hat eine Masse von {m|60 kg}. Ihre beiden Absätze haben zusammen eine Fläche von {A|8 cm²}. {q|Beurteile Toms Behauptung. Wähle die richtige Aussage.}',
    given:['Elefant: {m|m = 3 000 kg}, 4 Füße mit je {A|0,15 m²}','Frau: {m|m = 60 kg}, Absätze zusammen {A|8 cm²}'],
    pre:['Elefant: F = 3 000 kg · 10 N/kg = <b>30 000 N</b>, A = 4 · 0,15 m² = <b>0,6 m²</b>','Frau: F = 60 kg · 10 N/kg = <b>600 N</b>, A = 8 cm² : 10 000 = <b>0,0008 m²</b>'],
@@ -254,7 +266,7 @@ function triBlock(ask){
 const list = a => `<ul>${a.map(x=>`<li>${mk(x)}</li>`).join('')}</ul>`;
 
 /* ---------- Zustand ---------- */
-const KEY='druck-training-v2';
+const KEY='druck-training-v3';
 let prog = {coins:Array(TASKS.length).fill(null)};
 try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s&&Array.isArray(s.coins)&&s.coins.length===TASKS.length) prog=s; }catch(e){}
 const save=()=>{ try{localStorage.setItem(KEY,JSON.stringify(prog));}catch(e){} };
@@ -269,19 +281,19 @@ function total(){ return prog.coins.reduce((a,c)=>a+(c||0),0); }
 /* ---------- Lösungs-/Tipp-Bausteine ---------- */
 function given(t){ return `<div><h4>Gegeben</h4>${list(t.given)}</div>`; }
 function sought(t){
-  if(t.type==='choice') return `<div><h4>Gesucht</h4>${mk('{q|Beurteilung}')}: Dafür muss der Druck {p|p} berechnet und verglichen werden.</div>`.replace('{p|p}',mk('{p|p}'));
+  if(t.type==='choice') return `<div><h4>Gesucht</h4>${mk('{q|Beurteilung}')}: ${mk(t.note)}</div>`;
   return t.type==='num'
    ? `<div><h4>Gesucht</h4>${mk(`{q|${NAME[t.ask]} in ${UNIT[t.ask]}}`)}</div>`
    : `<div><h4>Gesucht</h4>${mk('{q|Druck p}')} von jedem Objekt, danach sortieren</div>`;
 }
 function tip1(t){ return `<div class="tipbox hl"><h4>Tipp 1: Gegeben und gesucht</h4>${given(t)}${sought(t)}<div style="font-size:15px;margin-top:4px">Im Aufgabentext sind die Angaben jetzt farbig markiert.</div></div>`; }
 function tip2(t){
-  const ask = t.type==='num'?t.ask:'p';
+  const ask = t.ask||'p';
   return `<div class="tipbox"><h4>Tipp 2: Das Rechendreieck</h4>${triBlock(ask)}${t.preHint?`<div class="rule" style="margin-top:8px">⚠ ${t.preHint}</div>`:''}</div>`;
 }
 function tip3(t){
   if(t.type==='num') return `<div class="tipbox hl"><h4>Tipp 3: Die Rechnung</h4>${t.pre.length?list(t.pre):''}<div class="calc">${mk(t.calc)}</div><div style="margin-top:6px">Tippe das Ergebnis ein, um die Aufgabe abzuschließen.</div></div>`;
-  if(t.type==='choice') return `<div class="tipbox hl"><h4>Tipp 3: Die Rechnung</h4>${list(t.pre)}<div class="calc">${mk(t.calc)}</div><div style="margin-top:6px">Wähle jetzt die passende Aussage aus.</div></div>`;
+  if(t.type==='choice') return `<div class="tipbox hl"><h4>Tipp 3: Die Rechnung</h4>${t.pre.length?list(t.pre):''}<div class="calc">${mk(t.calc)}</div><div style="margin-top:6px">Wähle jetzt die passende Aussage aus.</div></div>`;
   const o=order(t);
   return `<div class="tipbox hl"><h4>Tipp 3: Alle Drücke</h4>${list(t.items.map(it=>`<b>${it.name}</b>: ${it.calc.replace(/^p = .* = /,'p = ')}`))}<div>Jetzt nur noch richtig ${t.dir==='asc'?'aufsteigend':'absteigend'} sortieren.</div></div>`;
 }
@@ -295,8 +307,8 @@ function solution(t){
     h+=`<div class="ans">Antwort: ${t.ans}</div>`;
   }else if(t.type==='choice'){
     h+=given(t)+sought(t);
-    h+=`<div><h4>Umrechnen / Zwischenschritt</h4>${list(t.pre)}</div>`;
-    h+=`<div><h4>Rechendreieck</h4>${triBlock('p')}</div>`;
+    if(t.pre.length) h+=`<div><h4>Umrechnen / Zwischenschritt</h4>${list(t.pre)}</div>`;
+    h+=`<div><h4>Rechendreieck</h4>${triBlock(t.ask)}</div>`;
     h+=`<div><h4>Einsetzen und rechnen</h4><div class="calc">${mk(t.calc)}</div></div>`;
     h+=`<div><h4>Die Aussagen im Überblick</h4><ul>${t.opts.map(o=>`<li><b>${o.ok?'✓ richtig':'✗ falsch'}:</b> ${o.t}<br><i>${o.why}</i></li>`).join('')}</ul></div>`;
     h+=`<div class="ans">Ergebnis: ${t.ans}</div>`;
